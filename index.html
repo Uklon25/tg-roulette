@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рулетка Подарков</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f8f8; }
+        .roulette-container { display: flex; justify-content: center; margin: 50px 0; }
+        .roulette { width: 300px; height: 100px; display: flex; align-items: center; justify-content: center; border: 2px solid #ddd; background: #fff; overflow: hidden; white-space: nowrap; }
+        .item { padding: 15px; font-size: 18px; font-weight: bold; display: inline-block; min-width: 100px; }
+        button { padding: 10px 20px; font-size: 18px; background: #ff9800; color: #fff; border: none; cursor: pointer; margin-top: 20px; border-radius: 5px; }
+        button:hover { background: #e68900; }
+    </style>
+</head>
+<body>
+    <h1>🎰 Рулетка Подарков</h1>
+    <div class="roulette-container">
+        <div class="roulette">
+            <div class="item">🐻 Плюшевый мишка</div>
+            <div class="item">💛 Сердце</div>
+            <div class="item">🌹 Роза</div>
+            <div class="item">💰 50 звёздочек</div>
+            <div class="item">❌ Ничего</div>
+        </div>
+    </div>
+    <button id="spinBtn">Мне повезёт!</button>
+    <div id="result"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const spinBtn = document.getElementById("spinBtn");
+            const roulette = document.querySelector(".roulette");
+            const resultDiv = document.getElementById("result");
+
+            let items = [
+                "🐻 Плюшевый мишка",
+                "💛 Сердце",
+                "🌹 Роза",
+                "💰 50 звёздочек",
+                "❌ Ничего"
+            ];
+
+            // Настройка вероятностей вручную
+            let probabilities = {
+                "🐻 Плюшевый мишка": 30, // 30%
+                "💛 Сердце": 25, // 25%
+                "🌹 Роза": 20, // 20%
+                "💰 50 звёздочек": 15, // 15%
+                "❌ Ничего": 10  // 10%
+            };
+
+            spinBtn.addEventListener("click", function () {
+                let totalWeight = Object.values(probabilities).reduce((acc, val) => acc + val, 0);
+                let rand = Math.random() * totalWeight;
+                let cumulative = 0;
+                let selectedPrize = "";
+
+                for (let item in probabilities) {
+                    cumulative += probabilities[item];
+                    if (rand <= cumulative) {
+                        selectedPrize = item;
+                        break;
+                    }
+                }
+
+                roulette.innerHTML = `<div class="item">${selectedPrize}</div>`;
+                resultDiv.innerHTML = `🎉 Твой приз: <strong>${selectedPrize}</strong>!`;
+            });
+        });
+    </script>
+</body>
+</html>
