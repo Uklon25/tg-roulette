@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎰 Рулетка Подарков</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding-bottom: 80px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .buttons, .controls {
+      margin: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      background: linear-gradient(45deg, #ff9800, #e68900);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .roulette-container {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+    .roulette {
+      width: 320px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid #ff9800;
+      background: #333;
+      overflow: hidden;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffeb3b;
+      transition: transform 1s ease-in-out;
+    }
+    .table-container {
+      margin: 20px auto;
+      width: 90%;
+      max-width: 500px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1e1e1e;
+      border: 2px solid #ff9800;
+    }
+    th, td {
+      border: 1px solid #fff;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #ff9800;
+    }
+    #afterSpin {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    #inventory {
+      margin: 20px auto;
+      text-align: center;
+      max-width: 500px;
+    }
+    #inventory ul {
+      list-style: none;
+      padding: 0;
+    }
+    #inventory li {
+      margin: 5px 0;
+      padding: 5px;
+      background-color: #2a2a2a;
+      border: 1px solid #ff9800;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #1e1e1e;
+      border-top: 2px solid #ff9800;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      z-index: 1000;
+    }
+    .bottom-nav button {
+      background: none;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+    }
+    .bottom-nav button.active {
+      color: #ff9800;
+      font-weight: bold;
+    }
+    #inventoryControls {
+      margin-bottom: 10px;
+    }
+    #profile {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    #profile img {
+      width: 80px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    #adminPanel {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎰 Рулетка Подарков</h1>
+  <h2>Баланс: <span id="balance">0</span> звёзд</h2>
+
+  <div class="buttons">
+    <button onclick="selectRoulette('25')">🎰 25 звёзд</button>
+    <button onclick="selectRoulette('50')">🎰 50 звёзд</button>
+    <button onclick="selectRoulette('100')">🎰 100 звёзд</button>
+  </div>
+
+  <div class="roulette-container">
+    <div class="roulette" id="roulette">🎁 Выберите рулетку!</div>
+  </div>
+
+  <div class="controls" id="controls">
+    <button onclick="startRoulette()">🔄 Крутить!</button>
+  </div>
+
+  <div class="controls" id="afterSpin">
+    <button onclick="sellPrize()">💰 Продать</button>
+    <button onclick="storePrize()">📦 Отложить</button>
+    <button onclick="resetRoulette()">⬅ Вернуться</button>
+  </div>
+
+  <div class="table-container" id="tableContainer"></div>
+
+  <div class="table-container" id="inventory">
+    <h2>Инвентарь:</h2>
+    <div id="inventoryControls">
+      <button onclick="sellAllPrizes()">💰 Продать всё</button>
+    </div>
+    <ul id="inventoryList"></ul>
+  </div>
+
+  <div id="profile">
+    <img id="userPic" src="" alt="avatar">
+    <h2 id="userName">Профиль</h2>
+    <button onclick="alert('Пополнение через CryptoBot в разработке')">💎 Пополнить</button>
+    <div id="adminPanel" style="display:none">
+      <button onclick="addAdminStars()">💎 +1000 звёзд (Админ)</button>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button onclick="showSection('profile')">👤 Профиль</button>
+    <button onclick="showSection('inventory')">📦 Инвентарь</button>
+    <button class="active" onclick="showSection('roulette')">🎰 Рулетка</button>
+  </div>
+
+  <script>
+    const ADMIN_ID = 6774136020;
+    const userData = Telegram.WebApp.initDataUnsafe.user;
+
+    let balance = parseInt(localStorage.getItem('balance')) || 0;
+    let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+    let selectedStars = null;
+    let lastPrize = "";
+
+    const chances = {} // как раньше
+
+    function updateBalance() {
+      document.getElementById("balance").textContent = balance;
+      localStorage.setItem('balance', balance);
+    }
+
+    function selectRoulette(stars) {
+      selectedStars = stars;
+      document.getElementById("tableContainer").innerHTML = generateTable(stars);
+      document.getElementById("roulette").textContent = `🎰 Готово! Нажмите \"Крутить\"`;
+      document.getElementById("controls").style.display = "flex";
+      document.getElementById("afterSpin").style.display = "none";
+    }
+
+    function generateTable(stars) { /* как раньше */ }
+
+    function startRoulette() {
+      if (!selectedStars || balance < parseInt(selectedStars)) return alert("Недостаточно звёзд");
+      balance -= parseInt(selectedStars);
+      updateBalance();
+      const items = chances[selectedStars];
+      const rnd = Math.random() * 100;
+      let sum = 0;
+      for (let item of items) {
+        sum += item[1];
+        if (rnd <= sum) {
+          lastPrize = item[0];
+          break;
+        }
+      }
+      const roulette = document.getElementById("roulette");
+      roulette.style.transform = "rotate(360deg) scale(1.05)";
+      setTimeout(() => {
+        roulette.textContent = lastPrize;
+        roulette.style.transform = "rotate(0deg) scale(1)";
+        document.getElementById("afterSpin").style.display = "flex";
+      }, 1000);
+    }
+
+    function sellPrize() {
+      balance += Math.floor(selectedStars / 2);
+      updateBalance();
+      resetRoulette();
+    }
+
+    function storePrize() {
+      inventory.push(lastPrize);
+      updateInventory();
+      resetRoulette();
+    }
+
+    function updateInventory() {
+      const list = document.getElementById("inventoryList");
+      list.innerHTML = "";
+      inventory.forEach((item, i) => {
+        list.innerHTML += `<li>${item} <button onclick="sellSinglePrize(${i})">💰 Продать</button></li>`;
+      });
+      localStorage.setItem('inventory', JSON.stringify(inventory));
+    }
+
+    function sellSinglePrize(index) {
+      inventory.splice(index, 1);
+      balance += 10;
+      updateBalance();
+      updateInventory();
+    }
+
+    function sellAllPrizes() {
+      balance += inventory.length * 10;
+      inventory = [];
+      updateBalance();
+      updateInventory();
+    }
+
+    function resetRoulette() {
+      document.getElementById("roulette").textContent = "🎰 Готово! Нажмите \"Крутить\"";
+      document.getElementById("afterSpin").style.display = "none";
+    }
+
+    function showSection(id) {
+      document.getElementById("inventory").style.display = id === "inventory" ? "block" : "none";
+      document.getElementById("profile").style.display = id === "profile" ? "block" : "none";
+      document.querySelector(".bottom-nav button.active").classList.remove("active");
+      document.querySelector(`.bottom-nav button[onclick*='${id}']`).classList.add("active");
+    }
+
+    function addAdminStars() {
+      balance += 1000;
+      updateBalance();
+    }
+
+    window.Telegram.WebApp.ready();
+    if (userData) {
+      document.getElementById('userName').textContent = userData.first_name + ' ' + (userData.last_name || '');
+      document.getElementById('userPic').src = userData.photo_url;
+      if (userData.id === ADMIN_ID) {
+        document.getElementById("adminPanel").style.display = "block";
+      }
+    }
+
+    updateBalance();
+    updateInventory();
+  </script>
+</body>
+</html>
