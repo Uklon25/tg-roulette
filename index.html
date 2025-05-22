@@ -54,7 +54,7 @@
       font-size: 18px;
       font-weight: bold;
       color: #ffeb3b;
-      transition: transform 1s ease-in-out;
+      position: relative;
     }
     .table-container {
       margin: 20px auto;
@@ -86,6 +86,7 @@
       margin: 20px auto;
       text-align: center;
       max-width: 500px;
+      display: none;
     }
     #inventory ul {
       list-style: none;
@@ -147,27 +148,29 @@
   <h1>🎰 Рулетка Подарков</h1>
   <h2>Баланс: <span id="balance">0</span> звёзд</h2>
 
-  <div class="buttons">
-    <button onclick="selectRoulette('25')">🎰 25 звёзд</button>
-    <button onclick="selectRoulette('50')">🎰 50 звёзд</button>
-    <button onclick="selectRoulette('100')">🎰 100 звёзд</button>
-  </div>
+  <div id="roulettePage">
+    <div class="buttons">
+      <button onclick="selectRoulette('25')">🎰 25 звёзд</button>
+      <button onclick="selectRoulette('50')">🎰 50 звёзд</button>
+      <button onclick="selectRoulette('100')">🎰 100 звёзд</button>
+    </div>
 
-  <div class="roulette-container">
-    <div class="roulette" id="roulette">🎁 Выберите рулетку!</div>
-  </div>
+    <div class="roulette-container">
+      <div class="roulette" id="roulette">🎁 Выберите рулетку!</div>
+    </div>
 
-  <div class="controls" id="controls">
-    <button onclick="startRoulette()">🔄 Крутить!</button>
-  </div>
+    <div class="controls" id="controls">
+      <button onclick="startRoulette()">🔄 Крутить!</button>
+    </div>
 
-  <div class="controls" id="afterSpin">
-    <button onclick="sellPrize()">💰 Продать</button>
-    <button onclick="storePrize()">📦 Отложить</button>
-    <button onclick="resetRoulette()">⬅ Вернуться</button>
-  </div>
+    <div class="controls" id="afterSpin">
+      <button onclick="sellPrize()">💰 Продать</button>
+      <button onclick="storePrize()">📦 Отложить</button>
+      <button onclick="resetRoulette()">⬅ Вернуться</button>
+    </div>
 
-  <div class="table-container" id="tableContainer"></div>
+    <div class="table-container" id="tableContainer"></div>
+  </div>
 
   <div class="table-container" id="inventory">
     <h2>Инвентарь:</h2>
@@ -189,19 +192,23 @@
   <div class="bottom-nav">
     <button onclick="showSection('profile')">👤 Профиль</button>
     <button onclick="showSection('inventory')">📦 Инвентарь</button>
-    <button class="active" onclick="showSection('roulette')">🎰 Рулетка</button>
+    <button class="active" onclick="showSection('roulettePage')">🎰 Рулетка</button>
   </div>
 
   <script>
     const ADMIN_ID = 6774136020;
     const userData = Telegram.WebApp.initDataUnsafe.user;
 
-    let balance = parseInt(localStorage.getItem('balance')) || 0;
+    let balance = userData.id === ADMIN_ID ? 1000 : 0;
     let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
     let selectedStars = null;
     let lastPrize = "";
 
-    const chances = {} // как раньше
+    const chances = {
+      "25": [["🍬 Конфета", 50], ["🍫 Шоколад", 30], ["🎉 Сюрприз", 15], ["💎 Джекпот", 5]],
+      "50": [["🍫 Шоколад", 40], ["🎁 Подарок", 35], ["🎉 Сюрприз", 20], ["💎 Джекпот", 5]],
+      "100": [["🎁 Подарок", 45], ["🎉 Сюрприз", 30], ["🎮 Игрушка", 20], ["💎 Джекпот", 5]]
+    };
 
     function updateBalance() {
       document.getElementById("balance").textContent = balance;
@@ -216,7 +223,10 @@
       document.getElementById("afterSpin").style.display = "none";
     }
 
-    function generateTable(stars) { /* как раньше */ }
+    function generateTable(stars) {
+      const rows = chances[stars].map(([name, chance]) => `<tr><td>${name}</td><td>${chance}%</td></tr>`).join('');
+      return `<table><tr><th>Приз</th><th>Шанс</th></tr>${rows}</table>`;
+    }
 
     function startRoulette() {
       if (!selectedStars || balance < parseInt(selectedStars)) return alert("Недостаточно звёзд");
@@ -233,12 +243,17 @@
         }
       }
       const roulette = document.getElementById("roulette");
-      roulette.style.transform = "rotate(360deg) scale(1.05)";
+      roulette.textContent = "";
+      roulette.style.transition = "none";
+      roulette.innerHTML = `<div style='display:flex;gap:10px;transform:translateX(0);transition:transform 2s ease;'>${Array(20).fill(items.map(i => `<div>${i[0]}</div>`).join('')).join('')}</div>`;
+      const inner = roulette.firstChild;
       setTimeout(() => {
-        roulette.textContent = lastPrize;
-        roulette.style.transform = "rotate(0deg) scale(1)";
-        document.getElementById("afterSpin").style.display = "flex";
-      }, 1000);
+        inner.style.transform = `translateX(-${Math.floor(Math.random() * 3000 + 2000)}px)`;
+        setTimeout(() => {
+          roulette.textContent = lastPrize;
+          document.getElementById("afterSpin").style.display = "flex";
+        }, 2100);
+      }, 50);
     }
 
     function sellPrize() {
@@ -282,6 +297,7 @@
     }
 
     function showSection(id) {
+      document.getElementById("roulettePage").style.display = id === "roulettePage" ? "block" : "none";
       document.getElementById("inventory").style.display = id === "inventory" ? "block" : "none";
       document.getElementById("profile").style.display = id === "profile" ? "block" : "none";
       document.querySelector(".bottom-nav button.active").classList.remove("active");
