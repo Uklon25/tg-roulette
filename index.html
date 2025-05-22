@@ -1,295 +1,350 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🎰 Рулетка Подарков</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding-bottom: 80px;
-      user-select: none;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    .buttons, .controls {
-      margin: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      background: linear-gradient(45deg, #ff9800, #e68900);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    button:hover:enabled {
-      transform: scale(1.05);
-    }
-    button:disabled {
-      background: #555;
-      cursor: default;
-      transform: none !important;
-    }
-
-    .roulette-container {
-      position: relative;
-      width: 320px;
-      height: 100px;
-      margin: 30px auto;
-      border: 3px solid #ff9800;
-      border-radius: 10px;
-      background: #333;
-      overflow: hidden;
-      user-select: none;
-    }
-    .roulette-strip {
-      display: flex;
-      height: 100%;
-      align-items: center;
-      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-      will-change: transform;
-      cursor: pointer;
-    }
-    .roulette-item {
-      flex: 0 0 100px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 24px;
-      color: #ffeb3b;
-      padding: 10px 5px;
-      border-left: 1px solid #ff9800;
-      border-right: 1px solid #ff9800;
-      user-select: none;
-      background: linear-gradient(135deg, #444, #222);
-      box-sizing: border-box;
-    }
-    /* Пиптик сверху, показывающий выбранный приз */
-    .pointer {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-bottom: 20px solid #ff9800;
-      filter: drop-shadow(0 0 4px #ff9800);
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    /* Скрывать кнопки после спина */
-    #afterSpin {
-      display: none;
-    }
-
-    .table-container {
-      margin: 20px auto;
-      width: 90%;
-      max-width: 500px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #1e1e1e;
-      border: 2px solid #ff9800;
-    }
-    th, td {
-      border: 1px solid #fff;
-      padding: 8px;
-      text-align: center;
-      user-select: none;
-    }
-    th {
-      background-color: #ff9800;
-    }
-
-    /* Навигация */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background-color: #1e1e1e;
-      border-top: 2px solid #ff9800;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 10px 0;
-      z-index: 1000;
-    }
-    .bottom-nav button {
-      background: none;
-      color: #fff;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-    }
-    .bottom-nav button.active {
-      color: #ff9800;
-      font-weight: bold;
-    }
-
-    #inventory {
-      margin: 20px auto;
-      text-align: center;
-      max-width: 500px;
-      display: none;
-    }
-    #inventory ul {
-      list-style: none;
-      padding: 0;
-    }
-    #inventory li {
-      margin: 5px 0;
-      padding: 5px;
-      background-color: #2a2a2a;
-      border: 1px solid #ff9800;
-      border-radius: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #inventoryControls {
-      margin-bottom: 10px;
-    }
-    #profile {
-      display: none;
-      text-align: center;
-      padding: 20px;
-    }
-    #profile img {
-      width: 80px;
-      border-radius: 50%;
-      margin-bottom: 10px;
-    }
-    #adminPanel {
-      margin-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Рулетка Подарков</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+  }
+  #roulette-container {
+    position: relative;
+    width: 420px;
+    overflow: hidden;
+    margin: 20px auto;
+    border: 2px solid #333;
+    border-radius: 10px;
+  }
+  #roulette-strip {
+    display: flex;
+    transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .roulette-item {
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    margin: 0 2px;
+    font-size: 30px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    user-select: none;
+  }
+  #pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 15px solid red;
+    z-index: 10;
+  }
+  button {
+    margin: 10px 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+  #after-spin-controls {
+    margin-top: 20px;
+    display: none;
+  }
+  #balance {
+    font-weight: bold;
+    font-size: 20px;
+  }
+  #inventory {
+    margin-top: 30px;
+  }
+  #inventory-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .inventory-item {
+    background: #ddd;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 24px;
+    user-select: none;
+  }
+  #admin-controls {
+    margin-top: 20px;
+  }
+</style>
 </head>
 <body>
-  <h1>🎰 Рулетка Подарков</h1>
-  <h2>Баланс: <span id="balance">0</span> звёзд</h2>
 
-  <div id="roulettePage">
-    <div class="buttons">
-      <button onclick="selectRoulette('25')">🎰 25 звёзд</button>
-      <button onclick="selectRoulette('50')">🎰 50 звёзд</button>
-      <button onclick="selectRoulette('100')">🎰 100 звёзд</button>
-    </div>
+<h1>Рулетка Подарков</h1>
+<div>Баланс звезд: <span id="balance">1000</span></div>
 
-    <div class="roulette-container">
-      <div class="pointer"></div>
-      <div class="roulette-strip" id="rouletteStrip"></div>
-    </div>
+<label>
+  Выберите ставку:
+  <select id="star-select">
+    <option value="25">25 звезд</option>
+    <option value="50">50 звезд</option>
+    <option value="100">100 звезд</option>
+  </select>
+</label>
 
-    <div class="controls" id="controls" style="justify-content:center;">
-      <button id="spinBtn" onclick="startRoulette()" disabled>🔄 Крутить!</button>
-    </div>
+<div id="roulette-container">
+  <div id="pointer"></div>
+  <div id="roulette-strip"></div>
+</div>
 
-    <div class="controls" id="afterSpin">
-      <button onclick="sellPrize()">💰 Продать</button>
-      <button onclick="storePrize()">📦 Отложить</button>
-      <button onclick="resetRoulette()">⬅ Вернуться</button>
-    </div>
+<button id="spin-btn">Крутить рулетку</button>
 
-    <div class="table-container" id="tableContainer"></div>
-  </div>
+<div id="after-spin-controls">
+  <button id="sell-btn">Продать приз</button>
+  <button id="spin-again-btn">Крутить ещё раз</button>
+</div>
 
-  <div class="table-container" id="inventory">
-    <h2>Инвентарь:</h2>
-    <div id="inventoryControls">
-      <button onclick="sellAllPrizes()">💰 Продать всё</button>
-    </div>
-    <ul id="inventoryList"></ul>
-  </div>
+<div id="admin-controls" style="display:none;">
+  <button id="add-stars-btn">+1000 звезд (Админ)</button>
+</div>
 
-  <div id="profile">
-    <img id="userPic" src="" alt="avatar" />
-    <h2 id="userName">Профиль</h2>
-    <button onclick="alert('Пополнение через CryptoBot в разработке')">💎 Пополнить</button>
-    <div id="adminPanel" style="display:none;">
-      <button onclick="addAdminStars()">💎 +1000 звёзд (Админ)</button>
-    </div>
-  </div>
+<h2>Инвентарь</h2>
+<div id="inventory-list"></div>
 
-  <div class="bottom-nav">
-    <button onclick="showSection('profile')">👤 Профиль</button>
-    <button onclick="showSection('inventory')">📦 Инвентарь</button>
-    <button class="active" onclick="showSection('roulettePage')">🎰 Рулетка</button>
-  </div>
+<script>
+  const userId = "6774136020"; // Твой ID для проверки
 
-  <script>
-    const ADMIN_ID = 6774136020;
-    // Заглушка для Telegram.WebApp (для теста вне Telegram)
-    const Telegram = window.Telegram || { WebApp: { initDataUnsafe: { user: { id: 123456, first_name: "Тест", last_name: "Пользователь", photo_url: "" } }, ready: () => {} } };
+  const chances = {
+    "25": [
+      ["🧸 Плюшевый мишка", 21.37],
+      ["❤️ Сердце с бантом", 21.37],
+      ["🎁 Подарочная коробка", 25],
+      ["🌹 Красная роза", 25],
+      ["🚀 Ракета", 1.21],
+      ["🍾 Шампанское", 1.21],
+      ["💍 Кольцо с бриллиантом", 0.86],
+      ["❌ Пустая ячейка", 4.98]
+    ],
+    "50": [
+      ["🧸 Плюшевый мишка", 8.08],
+      ["❤️ Сердце с бантом", 8.08],
+      ["🎁 Подарочная коробка", 13.47],
+      ["🌹 Красная роза", 13.47],
+      ["💐 Букет цветов", 12.5],
+      ["🚀 Ракета", 12.5],
+      ["🍾 Шампанское", 12.5],
+      ["💍 Кольцо с бриллиантом", 1.48],
+      ["🏆 Кубок", 1.48],
+      ["🎂 Торт с свечами", 12.5],
+      ["❌ Пустая ячейка", 4.94]
+    ],
+    "100": [
+      ["🧸 Плюшевый мишка", 3.61],
+      ["❤️ Сердце с бантом", 3.61],
+      ["🎁 Подарочная коробка", 8.02],
+      ["🌹 Красная роза", 8.02],
+      ["💐 Букет цветов", 8.35],
+      ["🚀 Ракета", 8.35],
+      ["🍾 Шампанское", 8.02],
+      ["💍 Кольцо с бриллиантом", 16],
+      ["🏆 Кубок", 16],
+      ["🎂 Торт с свечами", 7.02],
+      ["💎 Алмаз", 16],
+      ["🎉 Happy B-day табличка", 4],
+      ["❌ Пустая ячейка", 1]
+    ]
+  };
 
-    const userData = Telegram.WebApp.initDataUnsafe.user;
+  const prizeCost = {
+    "🧸 Плюшевый мишка": 15,
+    "❤️ Сердце с бантом": 15,
+    "🎁 Подарочная коробка": 25,
+    "🌹 Красная роза": 25,
+    "🚀 Ракета": 50,
+    "🍾 Шампанское": 50,
+    "💍 Кольцо с бриллиантом": 100,
+    "❌ Пустая ячейка": 0,
+    "💐 Букет цветов": 50,
+    "🏆 Кубок": 100,
+    "🎂 Торт с свечами": 50,
+    "💎 Алмаз": 100,
+    "🎉 Happy B-day табличка": 350
+  };
 
-    let balance = userData.id === ADMIN_ID ? 1000 : 500; // Для теста, чтобы баланс не 0
-    let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-    let selectedStars = null;
-    let lastPrize = "";
-    let spinning = false;
+  let balance = 1000;
+  let selectedStars = "25";
+  let spinning = false;
+  let lastPrize = null;
+  let inventory = [];
 
-    const chances = {
-      "25": [
-        ["🧸 Плюшевый мишка", 21.37],
-        ["❤️ Сердце с бантом", 21.37],
-        ["🎁 Подарочная коробка", 25],
-        ["🌹 Красная роза", 25],
-        ["🚀 Ракета", 1.21],
-        ["🍾 Шампанское", 1.21],
-        ["💍 Кольцо с бриллиантом", 0.86],
-        ["❌ Пустая ячейка", 4.98]
-      ],
-      "50": [
-        ["🧸 Плюшевый мишка", 8.08],
-        ["❤️ Сердце с бантом", 8.08],
-        ["🎁 Подарочная коробка", 13.47],
-        ["🌹 Красная роза", 13.47],
-        ["💐 Букет цветов", 12.5],
-        ["🚀 Ракета", 12.5],
-        ["🍾 Шампанское", 12.5],
-        ["💍 Кольцо с бриллиантом", 1.48],
-        ["🏆 Кубок", 1.48],
-        ["🎂 Торт с свечами", 12.5],
-        ["❌ Пустая ячейка", 4.94]
-      ],
-      "100": [
-        ["🧸 Плюшевый мишка", 3.61],
-        ["❤️ Сердце с бантом", 3.61],
-        ["🎁 Подарочная коробка", 8.02],
-        ["🌹 Красная роза", 8.02],
-        ["💐 Букет цветов", 8.35],
-        ["🚀 Ракета", 8.35],
-        ["🍾 Шампанское", 8.02],
-        ["💍 Кольцо с бриллиантом", 16],
-        ["🏆 Кубок", 16],
-        ["🎂 Торт с свечами", 7.02],
-        ["💎 Алмаз", 16],
-        ["🎉 Happy B-day табличка", 4],
-        ["❌ Пустая ячейка", 1]
-      ]
-    };
+  const balanceEl = document.getElementById('balance');
+  const starSelect = document.getElementById('star-select');
+  const spinBtn = document.getElementById('spin-btn');
+  const rouletteStrip = document.getElementById('roulette-strip');
+  const afterSpinControls = document.getElementById('after-spin-controls');
+  const sellBtn = document.getElementById('sell-btn');
+  const spinAgainBtn = document.getElementById('spin-again-btn');
+  const inventoryList = document.getElementById('inventory-list');
+  const adminControls = document.getElementById('admin-controls');
+  const addStarsBtn = document.getElementById('add-stars-btn');
 
-    function updateBalance() {
-      document.getElementById("balance").textContent = balance;
-      localStorage.setItem('balance', balance);
+  // Копия шансов для динамики
+  let dynamicChances = JSON.parse(JSON.stringify(chances));
+
+  // Проверяем ID и показываем кнопку админа
+  function checkAdmin() {
+    // Здесь можно вместо '6774136020' подставить реальный ID юзера из сессии или API
+    if (userId === "6774136020") {
+      adminControls.style.display = "block";
     }
+  }
 
-    function selectRoulette(st
+  starSelect.addEventListener('change', () => {
+    selectedStars = starSelect.value;
+  });
+
+  function updateBalance() {
+    balanceEl.textContent = balance;
+  }
+
+  function updateInventory() {
+    inventoryList.innerHTML = '';
+    inventory.forEach(prize => {
+      const item = document.createElement('div');
+      item.className = 'inventory-item';
+      item.textContent = prize;
+      inventoryList.appendChild(item);
+    });
+  }
+
+  function adjustChances() {
+    const increaseFactor = 1.05;  // +5% к обычным призам
+    const decreaseFactor = 0.85;  // -15% к дорогим призам
+
+    for (const key of Object.keys(dynamicChances)) {
+      let total = 0;
+      dynamicChances[key] = dynamicChances[key].map(([prize, chance]) => {
+        const cost = prizeCost[prize] || 0;
+        let newChance = chance;
+        if (cost >= 50) {
+          newChance = chance * decreaseFactor;
+          if (newChance < 0.5) newChance = 0.5;
+        } else if (cost >= 15 && cost < 50) {
+          newChance = chance * increaseFactor;
+          if (newChance > 40) newChance = 40;
+        }
+        total += newChance;
+        return [prize, newChance];
+      });
+      dynamicChances[key] = dynamicChances[key].map(([prize, chance]) => {
+        return [prize, (chance / total) * 100];
+      });
+    }
+  }
+
+  function pickPrize() {
+    const prizes = dynamicChances[selectedStars];
+    const rand = Math.random() * 100;
+    let sum = 0;
+    for (const [prize, chance] of prizes) {
+      sum += chance;
+      if (rand <= sum) {
+        return prize;
+      }
+    }
+    return prizes[prizes.length - 1][0];
+  }
+
+  function startRoulette() {
+    if (spinning || !selectedStars) return;
+    if (balance < +selectedStars) {
+      alert("Недостаточно звёзд для кручения!");
+      return;
+    }
+    spinning = true;
+    balance -= +selectedStars;
+    updateBalance();
+
+    adjustChances();
+
+    const stripItems = [];
+    for (let i = 0; i < 30; i++) {
+      stripItems.push(pickPrize());
+    }
+    lastPrize = stripItems[stripItems.length - 1];
+
+    rouletteStrip.innerHTML = '';
+    stripItems.forEach(prize => {
+      const el = document.createElement('div');
+      el.className = 'roulette-item';
+      el.textContent = prize;
+      rouletteStrip.appendChild(el);
+    });
+
+    const itemWidth = 84;
+    const distance = itemWidth * (stripItems.length - 5);
+
+    rouletteStrip.style.transition = 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)';
+    rouletteStrip.style.transform = `translateX(-${distance}px)`;
+
+    spinBtn.disabled = true;
+    sellBtn.style.display = 'none';
+    spinAgainBtn.style.display = 'none';
+    afterSpinControls.style.display = 'none';
+
+    setTimeout(() => {
+      spinning = false;
+      spinBtn.disabled = false;
+
+      afterSpinControls.style.display = 'flex';
+      if (lastPrize === "❌ Пустая ячейка") {
+        sellBtn.style.display = 'none';
+      } else {
+        sellBtn.style.display = 'inline-block';
+      }
+      spinAgainBtn.style.display = 'inline-block';
+
+      alert(`Выпал приз: ${lastPrize}`);
+    }, 5200);
+  }
+
+  spinBtn.addEventListener('click', startRoulette);
+
+  sellBtn.addEventListener('click', () => {
+    if (!lastPrize || lastPrize === "❌ Пустая ячейка") return;
+    const cost = prizeCost[lastPrize] || 0;
+    balance += cost;
+    updateBalance();
+    alert(`Вы продали ${lastPrize} за ${cost} звезд.`);
+    lastPrize = null;
+    afterSpinControls.style.display = 'none';
+  });
+
+  spinAgainBtn.addEventListener('click', () => {
+    if (!lastPrize) return;
+    if (lastPrize !== "❌ Пустая ячейка") {
+      inventory.push(lastPrize);
+      updateInventory();
+      alert(`Приз ${lastPrize} добавлен в инвентарь.`);
+    }
+    lastPrize = null;
+    afterSpinControls.style.display = 'none';
+    rouletteStrip.style.transition = 'none';
+    rouletteStrip.style.transform = 'translateX(0)';
+  });
+
+  addStarsBtn.addEventListener('click', () => {
+    balance += 1000;
+    updateBalance();
+    alert('Добавлено +1000 звезд (админ)');
+  });
+
+  // Запускаем проверку админа при загрузке
+  checkAdmin();
+
+  updateBalance();
+  updateInventory();
+</script>
+
+</body>
+</html>
