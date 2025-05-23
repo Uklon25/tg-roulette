@@ -79,11 +79,6 @@
     width: 100%; box-sizing: border-box; background: #e33; color: #fff; font-weight: bold; margin-bottom: 6px;
     padding: 12px; border-radius: 8px; font-size: 1.07em; border: none; cursor: pointer;
   }
-  .sell-btn {
-    background: #e33; color: #fff; border-radius: 5px; border: none; font-size: 1em; padding: 7px 13px; margin-left: 10px;
-    cursor: pointer; font-weight: bold; transition: background 0.2s;
-  }
-  .sell-btn:disabled { background: #444; color: #bbb; }
   @media (max-width: 600px) {
     #main-content, #profile, #roulette, #inventory, .bottom-nav { max-width: 100vw; min-width: 0; padding-left: 0; padding-right: 0;}
     .inventory-item { min-width: 44vw; font-size: .99em;}
@@ -121,8 +116,7 @@
       </div>
       <div>
         <button id="spinBtn" disabled>Крутить</button>
-        <button id="spinAgainBtn" disabled>Крутить ещё</button>
-        <button id="sellPrizeBtn" disabled>Продать приз</button>
+        <button id="spinAgainBtn" style="display:none;">Крутить ещё</button>
       </div>
     </div>
     <div id="prizeInfo"></div>
@@ -246,22 +240,13 @@
       return;
     }
     document.getElementById('sellAllBtn').disabled = false;
-    // Для каждого предмета кнопка продать
     inventory.forEach(item => {
       let div = document.createElement("div");
       div.className = "inventory-item";
       div.innerHTML = `
         <span>${item.emoji} ${item.label} <span style="color:#aaa;">(${item.price} ⭐)</span></span>
-        <button class="sell-btn" data-invid="${item.invId}">Продать</button>
       `;
       invList.appendChild(div);
-    });
-    // Навешиваем события на "Продать"
-    document.querySelectorAll('.sell-btn').forEach(btn => {
-      btn.onclick = function() {
-        const invId = btn.getAttribute('data-invid');
-        sellInventoryItem(invId);
-      };
     });
   }
   function updateInventoryCount() {
@@ -274,7 +259,6 @@
   const luckButtons = [...document.querySelectorAll("#luckButtons button")];
   const spinBtn = document.getElementById("spinBtn");
   const spinAgainBtn = document.getElementById("spinAgainBtn");
-  const sellPrizeBtn = document.getElementById("sellPrizeBtn");
   const sellAllBtn = document.getElementById("sellAllBtn");
 
   const canvas = document.getElementById("wheel");
@@ -306,15 +290,21 @@
 
   function updateButtonsState() {
     if (spinning) {
-      spinBtn.disabled = true;
-      spinAgainBtn.disabled = true;
-      sellPrizeBtn.disabled = true;
+      spinBtn.style.display = "none";
+      spinAgainBtn.style.display = "none";
       luckButtons.forEach(btn => btn.disabled = true);
       return;
     }
+    // Если прокрутили и есть что показывать, то только "Крутить еще"
+    if (lastSpinDone) {
+      spinBtn.style.display = "none";
+      spinAgainBtn.style.display = "";
+    } else {
+      spinBtn.style.display = "";
+      spinAgainBtn.style.display = "none";
+    }
     spinBtn.disabled = !currentCost || balance < currentCost;
-    spinAgainBtn.disabled = !currentPrize || balance < currentCost;
-    sellPrizeBtn.disabled = !currentPrize;
+    spinAgainBtn.disabled = !currentCost || balance < currentCost;
     luckButtons.forEach(btn => btn.disabled = spinning);
   }
 
@@ -348,7 +338,6 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Эмодзи + подпись
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(sA + sectorAngle / 2 - Math.PI / 2);
@@ -376,6 +365,8 @@
     return targetAngle;
   }
 
+  let lastSpinDone = false;
+
   function animateSpin(targetAngle, highlightIdx, duration = 4000) {
     spinning = true;
     updateButtonsState();
@@ -397,9 +388,10 @@
       } else {
         currentAngle = targetAngle;
         spinning = false;
-        updateButtonsState();
         drawWheel(highlightIdx);
         showPrize();
+        lastSpinDone = true;
+        updateButtonsState();
       }
     }
     requestAnimationFrame(step);
@@ -412,15 +404,12 @@
       currentPrize = null;
     } else {
       prizeInfo.textContent = `Вы выиграли: ${currentPrize.emoji} ${currentPrize.label}! (Цена: ${currentPrize.price}⭐)`;
-      // Добавляем предмет в инвентарь с уникальным ID
       const invId = Math.random().toString(36).slice(2) + Date.now();
       inventory.push({ ...currentPrize, invId });
-      // Очищаем текущий приз (иначе можно будет продать дважды!)
       currentPrize = null;
     }
     updateInventory();
     updateInventoryCount();
-    updateButtonsState();
   }
 
   luckButtons.forEach(btn => {
@@ -429,12 +418,10 @@
       luckButtons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentCost = +btn.dataset.cost;
-      // Ставим актуальный массив призов
       currentPrizes = prizesData[currentCost].map(x => ({...x}));
       currentPrize = null;
+      lastSpinDone = false;
       prizeInfo.textContent = "";
-      spinAgainBtn.disabled = true;
-      sellPrizeBtn.disabled = true;
       updateButtonsState();
       drawWheel();
     });
@@ -450,9 +437,9 @@
     updateBalanceUI();
     let idx = selectPrizeIdx();
     currentPrize = { ...currentPrizes[idx] }; // копия
-    spinAgainBtn.disabled = false;
-    sellPrizeBtn.disabled = false;
     let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
+    lastSpinDone = false;
+    updateButtonsState();
     animateSpin(targetAngle, idx);
   });
 
@@ -464,37 +451,11 @@
     updateBalanceUI();
     let idx = selectPrizeIdx();
     currentPrize = { ...currentPrizes[idx] };
-    spinAgainBtn.disabled = false;
-    sellPrizeBtn.disabled = false;
     let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
+    lastSpinDone = false;
+    updateButtonsState();
     animateSpin(targetAngle, idx);
   });
-
-  sellPrizeBtn.addEventListener("click", () => {
-    if (!currentPrize) return;
-    if (currentPrize.price > 0) {
-      balance += currentPrize.price;
-      updateBalanceUI();
-      prizeInfo.textContent = `Вы продали ${currentPrize.emoji} ${currentPrize.label} за ${currentPrize.price}⭐`;
-    }
-    currentPrize = null;
-    spinAgainBtn.disabled = true;
-    sellPrizeBtn.disabled = true;
-    updateButtonsState();
-  });
-
-  // Продать предмет из инвентаря
-  function sellInventoryItem(invId) {
-    let idx = inventory.findIndex(i => i.invId === invId);
-    if (idx !== -1) {
-      let item = inventory[idx];
-      balance += item.price;
-      updateBalanceUI();
-      inventory.splice(idx, 1);
-      updateInventory();
-      updateInventoryCount();
-    }
-  }
 
   // Продать всё
   sellAllBtn.onclick = function() {
@@ -530,7 +491,6 @@
 
   // --- Инициализация ---
   updateBalanceUI();
-  updateButtonsState();
   // По умолчанию активируем ставку 25
   currentCost = 25;
   currentPrizes = prizesData[currentCost].map(x => ({...x}));
@@ -540,6 +500,8 @@
   updateInventory();
   updateInventoryCount();
   renderChanceTables();
+  updateButtonsState();
+  let lastSpinDone = false;
 
 </script>
 </body>
