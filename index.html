@@ -6,8 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   html, body {
-    margin: 0; padding: 0;
-    background: #121212; color: #eee; font-family: Arial,sans-serif;
+    margin: 0; padding: 0; background: #121212; color: #eee; font-family: Arial,sans-serif;
     min-height: 100vh; width: 100vw; overflow-x: hidden;
   }
   #main-content {
@@ -20,8 +19,7 @@
   }
   #wheel {
     background: #222; border-radius: 50%; box-shadow: 0 0 15px #0f0;
-    margin-bottom: 18px;
-    width: 95vw; max-width: 320px; height: 95vw; max-height: 320px; display: block;
+    margin-bottom: 18px; width: 95vw; max-width: 320px; height: 95vw; max-height: 320px; display: block;
   }
   .pointer {
     width: 0; height: 0; 
@@ -29,7 +27,7 @@
     border-right: 20px solid transparent;
     border-bottom: 28px solid #0f0;
     margin-bottom: -13px; margin-left: auto; margin-right: auto;
-    display: block; position: relative; top: 10px; z-index: 2;
+    display: block; position: relative; top: 8px; z-index: 2;
   }
   #controls {
     margin-bottom: 12px; width: 100%; box-sizing: border-box; max-width: 340px;
@@ -128,7 +126,7 @@
       </div>
     </div>
     <div id="prizeInfo"></div>
-    <div class="chance-table-title">Таблица шансов</div>
+    <div class="chance-table-title">Таблица призов</div>
     <div id="chanceTables"></div>
   </div>
   <div id="inventory" style="display:none;">
@@ -452,7 +450,6 @@
     updateBalanceUI();
     let idx = selectPrizeIdx();
     currentPrize = { ...currentPrizes[idx] }; // копия
-    // Запрещаем продавать этот приз повторно!
     spinAgainBtn.disabled = false;
     sellPrizeBtn.disabled = false;
     let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
@@ -475,13 +472,11 @@
 
   sellPrizeBtn.addEventListener("click", () => {
     if (!currentPrize) return;
-    // Только если мы выиграли денежный приз
     if (currentPrize.price > 0) {
       balance += currentPrize.price;
       updateBalanceUI();
       prizeInfo.textContent = `Вы продали ${currentPrize.emoji} ${currentPrize.label} за ${currentPrize.price}⭐`;
     }
-    // После продажи сбрасываем — нельзя продать дважды!
     currentPrize = null;
     spinAgainBtn.disabled = true;
     sellPrizeBtn.disabled = true;
@@ -513,14 +508,14 @@
     updateInventoryCount();
   };
 
-  // Кнопка +1000 звезд (только для нужного ID)
+  // Кнопка +1000 звезд (только для админа)
   document.getElementById("addStarsBtn").onclick = function () {
     balance += 1000;
     updateBalanceUI();
     updateProfile();
   };
 
-  // --- Таблица шансов ---
+  // --- Таблица призов ---
   function renderChanceTables() {
     let html = '';
     [25, 50, 100].forEach(cost => {
