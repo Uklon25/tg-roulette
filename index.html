@@ -6,241 +6,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   html, body {
-    margin: 0;
-    padding: 0;
-    background: #121212;
-    color: #eee;
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-    width: 100vw;
-    overflow-x: hidden;
+    margin: 0; padding: 0;
+    background: #121212; color: #eee; font-family: Arial,sans-serif;
+    min-height: 100vh; width: 100vw; overflow-x: hidden;
   }
   #main-content {
-    flex: 1;
-    width: 100vw;
-    max-width: 430px;
-    margin: 0 auto;
-    box-sizing: border-box;
-    padding-top: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex: 1; width: 100vw; max-width: 430px; margin: 0 auto;
+    box-sizing: border-box; padding-top: 16px;
+    display: flex; flex-direction: column; align-items: center;
   }
   #profile, #roulette, #inventory {
-    width: 100%;
-    max-width: 430px;
-    box-sizing: border-box;
-    padding: 0 8px;
+    width: 100%; max-width: 430px; box-sizing: border-box; padding: 0 8px;
   }
   #wheel {
-    background: #222;
-    border-radius: 50%;
-    box-shadow: 0 0 15px #0f0;
+    background: #222; border-radius: 50%; box-shadow: 0 0 15px #0f0;
     margin-bottom: 18px;
-    width: 95vw;
-    max-width: 320px;
-    height: 95vw;
-    max-height: 320px;
-    display: block;
+    width: 95vw; max-width: 320px; height: 95vw; max-height: 320px; display: block;
   }
   .pointer {
-    width: 0; 
-    height: 0; 
+    width: 0; height: 0; 
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
     border-bottom: 28px solid #0f0;
-    margin-bottom: -13px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-    position: relative;
-    top: 10px;
-    z-index: 2;
+    margin-bottom: -13px; margin-left: auto; margin-right: auto;
+    display: block; position: relative; top: 10px; z-index: 2;
   }
   #controls {
-    margin-bottom: 12px;
-    width: 100%;
-    box-sizing: border-box;
-    max-width: 340px;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-bottom: 12px; width: 100%; box-sizing: border-box; max-width: 340px;
+    margin-left: auto; margin-right: auto; display: flex; flex-direction: column; align-items: center;
   }
   #luckButtons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 7px;
-    margin-bottom: 8px;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-bottom: 8px;
   }
-  #luckButtons button {
-    min-width: 90px;
-  }
+  #luckButtons button { min-width: 90px; }
   button {
-    background: #0a0;
-    color: #cfc;
-    border: none;
-    padding: 10px 12px;
-    margin: 5px 3px;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    min-width: 70px;
-    box-sizing: border-box;
+    background: #0a0; color: #cfc; border: none; padding: 10px 12px; margin: 5px 3px;
+    border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; transition: background 0.3s ease;
+    min-width: 70px; box-sizing: border-box;
   }
-  button:disabled {
-    background: #444;
-    cursor: not-allowed;
-  }
-  #balance {
-    font-size: 1.2em;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  #prizeInfo {
-    font-size: 1.1em;
-    margin-top: 12px;
-    min-height: 26px;
-    text-align: center;
-    word-break: break-word;
-  }
-  #luckButtons button.active {
-    background: #4caf50;
-    box-shadow: 0 0 8px #4caf50;
-  }
+  button:disabled { background: #444; cursor: not-allowed; }
+  #balance { font-size: 1.2em; margin-bottom: 12px; text-align: center; }
+  #prizeInfo { font-size: 1.1em; margin-top: 12px; min-height: 26px; text-align: center; word-break: break-word;}
+  #luckButtons button.active { background: #4caf50; box-shadow: 0 0 8px #4caf50; }
   .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0; right: 0;
-    width: 100vw;
-    max-width: 430px;
-    margin: 0 auto;
-    z-index: 100;
-    display: flex;
-    justify-content: space-around;
-    background: #222;
-    border-top: 1px solid #333;
-    padding: 0;
-    height: 56px;
+    position: fixed; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 430px; margin: 0 auto; z-index: 100;
+    display: flex; justify-content: space-around; background: #222; border-top: 1px solid #333; padding: 0; height: 56px;
   }
   .bottom-nav button {
-    flex: 1;
-    margin: 0 2px;
-    font-size: 1.05em;
-    padding: 13px 0;
-    border-radius: 5px;
-    background: #111;
-    color: #eee;
-    border: none;
-    transition: background .25s;
-    min-width: 0;
-    min-height: 36px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 1; margin: 0 2px; font-size: 1.05em; padding: 13px 0; border-radius: 5px;
+    background: #111; color: #eee; border: none; transition: background .25s;
+    min-width: 0; min-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .bottom-nav button.active {
-    background: #0a0;
-    color: #fff;
-    box-shadow: 0 0 8px #0f0;
-  }
+  .bottom-nav button.active { background: #0a0; color: #fff; box-shadow: 0 0 8px #0f0; }
   .inventory-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-top: 10px;
-    padding-bottom: 60px;
-    justify-content: center;
+    display: flex; flex-direction: column; gap: 7px; margin-top: 10px; padding-bottom: 60px; width: 100%; align-items: stretch;
   }
   .inventory-item {
-    background: #232323;
-    border-radius: 8px;
-    padding: 12px 8px;
-    min-width: 100px;
-    text-align: center;
-    margin: 3px;
-    color: #fff;
-    font-size: 1em;
-    border: 1px solid #333;
-    word-break: break-word;
+    background: #232323; border-radius: 8px; padding: 10px 10px 10px 14px; min-width: 110px;
+    display: flex; align-items: center; justify-content: space-between; color: #fff; font-size: 1em; border: 1px solid #333;
+    margin: 3px 0; word-break: break-word; box-sizing: border-box;
   }
-  .profile-info {
-    padding: 20px 0 8px 0;
-    font-size: 1.1em;
-    text-align: center;
-    color: #fff;
-  }
-  .chance-table-title {
-    text-align: center;
-    font-size: 1.1em;
-    margin: 12px 0 3px 0;
-    font-weight: bold;
-    color: #8cff8c;
-    letter-spacing: 1px;
-  }
+  .profile-info { padding: 20px 0 8px 0; font-size: 1.1em; text-align: center; color: #fff; }
+  .chance-table-title { text-align: center; font-size: 1.1em; margin: 12px 0 3px 0; font-weight: bold; color: #8cff8c; letter-spacing: 1px;}
   .chance-table {
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto 10px auto;
-    border-collapse: collapse;
-    font-size: 0.98em;
-    background: #232323;
-    border-radius: 6px;
-    overflow: hidden;
+    width: 100%; max-width: 350px; margin: 0 auto 10px auto; border-collapse: collapse; font-size: 0.98em;
+    background: #232323; border-radius: 6px; overflow: hidden;
   }
-  .chance-table th, .chance-table td {
-    padding: 5px 4px;
-    border: 1px solid #333;
-    text-align: center;
+  .chance-table th, .chance-table td { padding: 5px 4px; border: 1px solid #333; text-align: center; }
+  .chance-table th { background: #191919; color: #9aff9a; font-weight: bold;}
+  .chance-table td { color: #eee; }
+  .chance-table tr:nth-child(even) td { background: #181818; }
+  .chance-table tr:nth-child(odd) td { background: #232323; }
+  .sell-all-btn {
+    width: 100%; box-sizing: border-box; background: #e33; color: #fff; font-weight: bold; margin-bottom: 6px;
+    padding: 12px; border-radius: 8px; font-size: 1.07em; border: none; cursor: pointer;
   }
-  .chance-table th {
-    background: #191919;
-    color: #9aff9a;
-    font-weight: bold;
+  .sell-btn {
+    background: #e33; color: #fff; border-radius: 5px; border: none; font-size: 1em; padding: 7px 13px; margin-left: 10px;
+    cursor: pointer; font-weight: bold; transition: background 0.2s;
   }
-  .chance-table td {
-    color: #eee;
-  }
-  .chance-table tr:nth-child(even) td {
-    background: #181818;
-  }
-  .chance-table tr:nth-child(odd) td {
-    background: #232323;
-  }
+  .sell-btn:disabled { background: #444; color: #bbb; }
   @media (max-width: 600px) {
-    #main-content, #profile, #roulette, #inventory, .bottom-nav {
-      max-width: 100vw;
-      min-width: 0;
-      padding-left: 0;
-      padding-right: 0;
-    }
-    .inventory-item {
-      min-width: 44vw;
-      font-size: .99em;
-    }
-    #controls {
-      max-width: 98vw;
-    }
-    #wheel {
-      max-width: 98vw;
-      max-height: 98vw;
-    }
-    .bottom-nav {
-      padding: 0;
-      height: 54px;
-    }
-    .bottom-nav button {
-      font-size: .97em;
-      padding: 10px 0;
-    }
-    .chance-table {
-      font-size: 0.9em;
-      max-width: 100vw;
-    }
+    #main-content, #profile, #roulette, #inventory, .bottom-nav { max-width: 100vw; min-width: 0; padding-left: 0; padding-right: 0;}
+    .inventory-item { min-width: 44vw; font-size: .99em;}
+    #controls { max-width: 98vw;}
+    #wheel { max-width: 98vw; max-height: 98vw;}
+    .bottom-nav { padding: 0; height: 54px;}
+    .bottom-nav button { font-size: .97em; padding: 10px 0;}
+    .chance-table { font-size: 0.9em; max-width: 100vw;}
   }
 </style>
 </head>
@@ -280,6 +133,7 @@
   </div>
   <div id="inventory" style="display:none;">
     <h2>Инвентарь</h2>
+    <button class="sell-all-btn" id="sellAllBtn">Продать всё</button>
     <div id="inventoryCount" style="color:#eee;font-size:1.07em;margin-bottom:4px;text-align:center;width:100%"></div>
     <div id="inventoryList" class="inventory-list"></div>
   </div>
@@ -315,45 +169,45 @@
   navBtns.roulette.onclick = () => showScreen("roulette");
   navBtns.inventory.onclick = () => showScreen("inventory");
 
-  // ------------ РУЛЕТКА ---------------
-  const chances = {
+  // --- ПРИЗЫ ---
+  const prizesData = {
     25: [
-      {name: "🧸 Мишка", chance: 21.37, price: 15},
-      {name: "❤️ Сердце", chance: 21.37, price: 15},
-      {name: "🎁 Коробка", chance: 25, price: 25},
-      {name: "🌹 Роза", chance: 25, price: 25},
-      {name: "🚀 Ракета", chance: 1.21, price: 50},
-      {name: "🍾 Шампанское", chance: 1.21, price: 50},
-      {name: "💍 Кольцо", chance: 0.86, price: 100},
-      {name: "❌ Пусто", chance: 4.98, price: 0}
+      { emoji: "🧸", label: "Мишка", price: 15 },
+      { emoji: "❤️", label: "Сердце", price: 15 },
+      { emoji: "🎁", label: "Коробка", price: 25 },
+      { emoji: "🌹", label: "Роза", price: 25 },
+      { emoji: "🚀", label: "Ракета", price: 50 },
+      { emoji: "🍾", label: "Шампанское", price: 50 },
+      { emoji: "💍", label: "Кольцо", price: 100 },
+      { emoji: "❌", label: "Пусто", price: 0 }
     ],
     50: [
-      {name: "🧸 Мишка", chance: 8.08, price: 15},
-      {name: "❤️ Сердце", chance: 8.08, price: 15},
-      {name: "🎁 Коробка", chance: 13.47, price: 25},
-      {name: "🌹 Роза", chance: 13.47, price: 25},
-      {name: "💐 Букет", chance: 12.5, price: 50},
-      {name: "🚀 Ракета", chance: 12.5, price: 50},
-      {name: "🍾 Шампанское", chance: 12.5, price: 50},
-      {name: "💍 Кольцо", chance: 1.48, price: 100},
-      {name: "🏆 Кубок", chance: 1.48, price: 100},
-      {name: "🎂 Торт", chance: 12.5, price: 50},
-      {name: "❌ Пусто", chance: 4.94, price: 0}
+      { emoji: "🧸", label: "Мишка", price: 15 },
+      { emoji: "❤️", label: "Сердце", price: 15 },
+      { emoji: "🎁", label: "Коробка", price: 25 },
+      { emoji: "🌹", label: "Роза", price: 25 },
+      { emoji: "💐", label: "Букет", price: 50 },
+      { emoji: "🚀", label: "Ракета", price: 50 },
+      { emoji: "🍾", label: "Шампанское", price: 50 },
+      { emoji: "💍", label: "Кольцо", price: 100 },
+      { emoji: "🏆", label: "Кубок", price: 100 },
+      { emoji: "🎂", label: "Торт", price: 50 },
+      { emoji: "❌", label: "Пусто", price: 0 }
     ],
     100: [
-      {name: "🧸 Мишка", chance: 3.61, price: 15},
-      {name: "❤️ Сердце", chance: 3.61, price: 15},
-      {name: "🎁 Коробка", chance: 8.02, price: 25},
-      {name: "🌹 Роза", chance: 8.02, price: 25},
-      {name: "💐 Букет", chance: 8.35, price: 50},
-      {name: "🚀 Ракета", chance: 8.35, price: 50},
-      {name: "🍾 Шампанское", chance: 8.02, price: 50},
-      {name: "💍 Кольцо", chance: 16, price: 100},
-      {name: "🏆 Кубок", chance: 16, price: 100},
-      {name: "🎂 Торт", chance: 7.02, price: 50},
-      {name: "💎 Алмаз", chance: 16, price: 100},
-      {name: "🎉 Табличка", chance: 4, price: 350},
-      {name: "❌ Пусто", chance: 1, price: 0}
+      { emoji: "🧸", label: "Мишка", price: 15 },
+      { emoji: "❤️", label: "Сердце", price: 15 },
+      { emoji: "🎁", label: "Коробка", price: 25 },
+      { emoji: "🌹", label: "Роза", price: 25 },
+      { emoji: "💐", label: "Букет", price: 50 },
+      { emoji: "🚀", label: "Ракета", price: 50 },
+      { emoji: "🍾", label: "Шампанское", price: 50 },
+      { emoji: "💍", label: "Кольцо", price: 100 },
+      { emoji: "🏆", label: "Кубок", price: 100 },
+      { emoji: "🎂", label: "Торт", price: 50 },
+      { emoji: "💎", label: "Алмаз", price: 100 },
+      { emoji: "🎉", label: "Табличка", price: 350 },
+      { emoji: "❌", label: "Пусто", price: 0 }
     ]
   };
 
@@ -361,14 +215,13 @@
   let currentCost = null;
   let spinning = false;
   let currentPrize = null;
-  let inventory = [];
+  let inventory = []; // {emoji,label,price,invId}
 
   // --- Telegram WebApp User Info ---
   let tgUserId = null;
   let tgUserName = "User";
   if (
-    window.Telegram &&
-    window.Telegram.WebApp &&
+    window.Telegram && window.Telegram.WebApp &&
     window.Telegram.WebApp.initDataUnsafe &&
     window.Telegram.WebApp.initDataUnsafe.user
   ) {
@@ -377,7 +230,7 @@
   }
   document.getElementById("username").textContent = tgUserName;
 
-  // Показать кнопку +1000 только нужному пользователю
+  // --- Кнопка +1000 только для нужного пользователя ---
   const addStarsBtnWrap = document.getElementById("addStarsBtnWrap");
   if (tgUserId === 6774136020) addStarsBtnWrap.style.display = "";
   else addStarsBtnWrap.style.display = "none";
@@ -391,13 +244,26 @@
     invList.innerHTML = "";
     if (inventory.length === 0) {
       invList.innerHTML = `<div style="color:#888;">Инвентарь пуст.</div>`;
+      document.getElementById('sellAllBtn').disabled = true;
       return;
     }
+    document.getElementById('sellAllBtn').disabled = false;
+    // Для каждого предмета кнопка продать
     inventory.forEach(item => {
       let div = document.createElement("div");
       div.className = "inventory-item";
-      div.innerHTML = `${item.name}<br><span style="font-size:.9em; color:#aaa;">(${item.price} ⭐)</span>`;
+      div.innerHTML = `
+        <span>${item.emoji} ${item.label} <span style="color:#aaa;">(${item.price} ⭐)</span></span>
+        <button class="sell-btn" data-invid="${item.invId}">Продать</button>
+      `;
       invList.appendChild(div);
+    });
+    // Навешиваем события на "Продать"
+    document.querySelectorAll('.sell-btn').forEach(btn => {
+      btn.onclick = function() {
+        const invId = btn.getAttribute('data-invid');
+        sellInventoryItem(invId);
+      };
     });
   }
   function updateInventoryCount() {
@@ -411,11 +277,12 @@
   const spinBtn = document.getElementById("spinBtn");
   const spinAgainBtn = document.getElementById("spinAgainBtn");
   const sellPrizeBtn = document.getElementById("sellPrizeBtn");
+  const sellAllBtn = document.getElementById("sellAllBtn");
 
   const canvas = document.getElementById("wheel");
   const ctx = canvas.getContext("2d");
 
-  // Для адаптации размера canvas к экрану
+  // --- Canvas адаптация ---
   function fitCanvas() {
     let size = Math.min(window.innerWidth * 0.95, 320);
     canvas.width = canvas.height = size;
@@ -432,6 +299,7 @@
   }
 
   let currentAngle = 0;
+  let currentPrizes = [];
 
   function updateBalanceUI() {
     balanceElem.textContent = balance;
@@ -462,70 +330,48 @@
       ctx.fillText("Выберите ставку", canvas.width / 2, canvas.height / 2);
       return;
     }
-    const segments = chances[currentCost];
+    const prizes = currentPrizes;
     let startAngle = currentAngle;
     const { wheelRadius, centerX, centerY } = getWheelGeom();
+    const N = prizes.length;
+    const sectorAngle = 2 * Math.PI / N;
 
-    for (let i = 0; i < segments.length; ++i) {
-      const seg = segments[i];
-      let segmentAngle = (seg.chance / 100) * 2 * Math.PI;
-
+    for (let i = 0; i < N; ++i) {
+      let sA = startAngle + i * sectorAngle;
+      let eA = startAngle + (i + 1) * sectorAngle;
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, wheelRadius, startAngle, startAngle + segmentAngle);
+      ctx.arc(centerX, centerY, wheelRadius, sA, eA);
       ctx.closePath();
-      // Чередуем цвета
-      ctx.fillStyle = seg.price === 0 ? "#222" : (i % 2 === 0 ? "#0b0" : "#097c09");
+      ctx.fillStyle = (i % 2 === 0) ? "#0b0" : "#097c09";
       if (highlightSegmentIdx === i) ctx.fillStyle = "#26e326";
       ctx.fill();
       ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Короткий текст, ближе к центру, повернут нормально
+      // Эмодзи + подпись
       ctx.save();
       ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + segmentAngle / 2 - Math.PI / 2);
+      ctx.rotate(sA + sectorAngle / 2 - Math.PI / 2);
       ctx.textAlign = "center";
+      ctx.font = (canvas.width * 0.11 | 0) + "px Arial";
       ctx.fillStyle = "#fff";
-      ctx.font = (canvas.width * 0.058 | 0) + "px Arial";
-      ctx.fillText(seg.name, wheelRadius * 0.7, 0);
+      ctx.fillText(prizes[i].emoji, wheelRadius * 0.68, 0);
+      ctx.font = (canvas.width * 0.055 | 0) + "px Arial";
+      ctx.fillText(prizes[i].label, wheelRadius * 0.68, canvas.width * 0.055);
       ctx.restore();
-
-      startAngle += segmentAngle;
     }
   }
 
-  function getSegmentIndexByPrize(segments, prize) {
-    for (let i = 0; i < segments.length; ++i) {
-      if (segments[i].name === prize.name && segments[i].price === prize.price) return i;
-    }
-    return -1;
+  function selectPrizeIdx() {
+    const prizes = currentPrizes;
+    return Math.floor(Math.random() * prizes.length);
   }
 
-  function selectPrize() {
-    const list = chances[currentCost];
-    let rand = Math.random() * 100;
-    let cumulative = 0;
-    for (let seg of list) {
-      cumulative += seg.chance;
-      if (rand <= cumulative) {
-        return seg;
-      }
-    }
-    return list[list.length - 1];
-  }
-
-  // Вернуть угол, чтобы треугольник всегда попадал на выигранный приз
-  function getTargetAngleForPrize(currentCost, prize) {
-    const segments = chances[currentCost];
-    let segmentIdx = getSegmentIndexByPrize(segments, prize);
-    if (segmentIdx === -1) segmentIdx = 0;
-    let angleAcc = 0;
-    for (let i = 0; i < segmentIdx; ++i) {
-      angleAcc += (segments[i].chance / 100) * 2 * Math.PI;
-    }
-    const segAngle = (segments[segmentIdx].chance / 100) * 2 * Math.PI;
-    let centerOfSegment = angleAcc + segAngle / 2;
+  function getTargetAngleEven(idx, N) {
+    const sectorAngle = 2 * Math.PI / N;
+    let centerOfSegment = idx * sectorAngle + sectorAngle / 2;
     let targetAngle = 1.5 * Math.PI - centerOfSegment;
     while (targetAngle < 0) targetAngle += 2 * Math.PI;
     while (targetAngle >= 2 * Math.PI) targetAngle -= 2 * Math.PI;
@@ -564,11 +410,15 @@
   function showPrize() {
     if (!currentPrize) return;
     if (currentPrize.price === 0) {
-      prizeInfo.textContent = `Увы, пустая ячейка. Ничего не выиграли.`;
+      prizeInfo.textContent = `Увы, пусто. Ничего не выиграли.`;
       currentPrize = null;
     } else {
-      prizeInfo.textContent = `Вы выиграли: ${currentPrize.name}! (Цена: ${currentPrize.price}⭐)`;
-      inventory.push(currentPrize);
+      prizeInfo.textContent = `Вы выиграли: ${currentPrize.emoji} ${currentPrize.label}! (Цена: ${currentPrize.price}⭐)`;
+      // Добавляем предмет в инвентарь с уникальным ID
+      const invId = Math.random().toString(36).slice(2) + Date.now();
+      inventory.push({ ...currentPrize, invId });
+      // Очищаем текущий приз (иначе можно будет продать дважды!)
+      currentPrize = null;
     }
     updateInventory();
     updateInventoryCount();
@@ -581,6 +431,8 @@
       luckButtons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentCost = +btn.dataset.cost;
+      // Ставим актуальный массив призов
+      currentPrizes = prizesData[currentCost].map(x => ({...x}));
       currentPrize = null;
       prizeInfo.textContent = "";
       spinAgainBtn.disabled = true;
@@ -598,11 +450,13 @@
     }
     balance -= currentCost;
     updateBalanceUI();
-    currentPrize = selectPrize();
-    const segments = chances[currentCost];
-    let prizeIdx = getSegmentIndexByPrize(segments, currentPrize);
-    let targetAngle = getTargetAngleForPrize(currentCost, currentPrize);
-    animateSpin(targetAngle, prizeIdx);
+    let idx = selectPrizeIdx();
+    currentPrize = { ...currentPrizes[idx] }; // копия
+    // Запрещаем продавать этот приз повторно!
+    spinAgainBtn.disabled = false;
+    sellPrizeBtn.disabled = false;
+    let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
+    animateSpin(targetAngle, idx);
   });
 
   spinAgainBtn.addEventListener("click", () => {
@@ -611,25 +465,53 @@
     prizeInfo.textContent = "";
     balance -= currentCost;
     updateBalanceUI();
-    currentPrize = selectPrize();
-    const segments = chances[currentCost];
-    let prizeIdx = getSegmentIndexByPrize(segments, currentPrize);
-    let targetAngle = getTargetAngleForPrize(currentCost, currentPrize);
-    animateSpin(targetAngle, prizeIdx);
+    let idx = selectPrizeIdx();
+    currentPrize = { ...currentPrizes[idx] };
+    spinAgainBtn.disabled = false;
+    sellPrizeBtn.disabled = false;
+    let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
+    animateSpin(targetAngle, idx);
   });
 
   sellPrizeBtn.addEventListener("click", () => {
     if (!currentPrize) return;
-    balance += currentPrize.price;
-    updateBalanceUI();
-    prizeInfo.textContent = `Вы продали ${currentPrize.name} за ${currentPrize.price}⭐`;
+    // Только если мы выиграли денежный приз
+    if (currentPrize.price > 0) {
+      balance += currentPrize.price;
+      updateBalanceUI();
+      prizeInfo.textContent = `Вы продали ${currentPrize.emoji} ${currentPrize.label} за ${currentPrize.price}⭐`;
+    }
+    // После продажи сбрасываем — нельзя продать дважды!
     currentPrize = null;
     spinAgainBtn.disabled = true;
     sellPrizeBtn.disabled = true;
     updateButtonsState();
+  });
+
+  // Продать предмет из инвентаря
+  function sellInventoryItem(invId) {
+    let idx = inventory.findIndex(i => i.invId === invId);
+    if (idx !== -1) {
+      let item = inventory[idx];
+      balance += item.price;
+      updateBalanceUI();
+      inventory.splice(idx, 1);
+      updateInventory();
+      updateInventoryCount();
+    }
+  }
+
+  // Продать всё
+  sellAllBtn.onclick = function() {
+    if (inventory.length === 0) return;
+    let sum = 0;
+    inventory.forEach(item => { sum += item.price; });
+    balance += sum;
+    updateBalanceUI();
+    inventory = [];
     updateInventory();
     updateInventoryCount();
-  });
+  };
 
   // Кнопка +1000 звезд (только для нужного ID)
   document.getElementById("addStarsBtn").onclick = function () {
@@ -642,9 +524,9 @@
   function renderChanceTables() {
     let html = '';
     [25, 50, 100].forEach(cost => {
-      html += `<div style="margin-bottom:9px;"><b>Ставка ${cost} ⭐</b><table class="chance-table"><tr><th>Приз</th><th>Шанс %</th><th>Цена</th></tr>`;
-      chances[cost].forEach(item => {
-        html += `<tr><td>${item.name}</td><td>${item.chance}</td><td>${item.price ? item.price + " ⭐" : "-"}</td></tr>`;
+      html += `<div style="margin-bottom:9px;"><b>Ставка ${cost} ⭐</b><table class="chance-table"><tr><th>Приз</th><th>Цена</th></tr>`;
+      prizesData[cost].forEach(item => {
+        html += `<tr><td>${item.emoji} ${item.label}</td><td>${item.price ? item.price + " ⭐" : "-"}</td></tr>`;
       });
       html += `</table></div>`;
     });
@@ -654,11 +536,16 @@
   // --- Инициализация ---
   updateBalanceUI();
   updateButtonsState();
+  // По умолчанию активируем ставку 25
+  currentCost = 25;
+  currentPrizes = prizesData[currentCost].map(x => ({...x}));
+  luckButtons[0].classList.add('active');
   drawWheel();
   showScreen('roulette');
   updateInventory();
   updateInventoryCount();
   renderChanceTables();
+
 </script>
 </body>
 </html>
