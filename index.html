@@ -91,10 +91,7 @@
     #tg-avatar {
       width: 72px; height: 72px; border-radius: 50%; background: #222; margin-bottom: 10px; display: none;
     }
-    #addStarsBtnWrap {
-      margin-top:12px; 
-      display:none;
-    }
+    #addStarsBtnWrap { margin-top:12px; display:none; }
     @media (max-width: 600px) {
       #main-content, #profile, #roulette, #inventory, .bottom-nav { max-width: 100vw; min-width: 0; padding-left: 0; padding-right: 0;}
       .inventory-item { min-width: 44vw; font-size: .99em;}
@@ -155,7 +152,6 @@
   <button id="navInventory">Инвентарь</button>
 </nav>
 <script>
-  // ========== НАСТРОЙКИ ==========
   const TG_ADMIN_ID = 6774136020;
   const prizesData = {
     25: [
@@ -195,30 +191,22 @@
     ]
   };
 
-  // ========== ГЛОБАЛЬНЫЕ ==========
   let balance = 1000;
   let inventory = [];
-  let currentCost = null;
+  let currentCost = 25;
   let spinning = false;
   let currentPrize = null;
   let lastSpinDone = false;
-  let currentPrizes = [];
+  let currentPrizes = prizesData[currentCost].map(x => ({...x}));
   let currentAngle = 0;
   let tgUser = {};
   let tgUserId = null;
 
-  // ========== ПРОФИЛЬ ==========
   function updateProfile() {
-    // Пытаемся получить данные Telegram через WebApp API
     tgUser = {};
     tgUserId = null;
-    let foundTg = false;
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
       tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-      foundTg = true;
-    } else if (window.tgUser) {
-      tgUser = window.tgUser;
-      foundTg = true;
     }
     tgUserId = tgUser.id;
     document.getElementById("username").textContent = tgUser.first_name || "Гость";
@@ -231,7 +219,6 @@
     } else {
       avatar.style.display = "none";
     }
-    // Кнопка +1000: всегда для TG_ADMIN_ID, если поле id есть
     if (tgUserId == TG_ADMIN_ID) {
       document.getElementById("addStarsBtnWrap").style.display = "";
     } else {
@@ -239,7 +226,6 @@
     }
     document.getElementById("balanceValueProfile").textContent = balance;
   }
-  // ========== ИНВЕНТАРЬ ==========
   function updateInventory() {
     const invList = document.getElementById('inventoryList');
     invList.innerHTML = "";
@@ -262,7 +248,7 @@
     document.getElementById('inventoryCount').textContent =
       `🎁 Предметов в инвентаре: ${inventory.length}`;
   }
-  // ========== РУЛЕТКА ==========
+
   const balanceElem = document.getElementById("balanceValue");
   const prizeInfo = document.getElementById("prizeInfo");
   const luckButtons = [...document.querySelectorAll("#luckButtons button")];
@@ -330,6 +316,7 @@
     const sectorAngle = 2 * Math.PI / N;
 
     for (let i = 0; i < N; ++i) {
+      let prize = prizes[i];
       let sA = startAngle + i * sectorAngle;
       let eA = startAngle + (i + 1) * sectorAngle;
       ctx.beginPath();
@@ -350,28 +337,34 @@
       ctx.textBaseline = "middle";
       ctx.font = (canvas.width * 0.12 | 0) + "px Arial";
       ctx.fillStyle = "#fff";
-      ctx.fillText(prizes[i].emoji, wheelRadius * 0.66, 0);
+      // Если prize не определен или пустой, показываем '?'
+      ctx.fillText((prize && prize.emoji) ? prize.emoji : "❓", wheelRadius * 0.66, 0);
       ctx.font = (canvas.width * 0.055 | 0) + "px Arial";
-      ctx.fillText(prizes[i].label, wheelRadius * 0.66, canvas.width * 0.065);
+      ctx.fillText((prize && prize.label) ? prize.label : "Пусто", wheelRadius * 0.66, canvas.width * 0.065);
       ctx.restore();
     }
   }
 
-  function selectPrizeIdx() {
-    const prizes = currentPrizes;
-    return Math.floor(Math.random() * prizes.length);
-  }
-
-  function getTargetAngleEven(idx, N) {
+  function getPrizeIdxAndTargetAngle(prizes, realProbs) {
+    let idx;
+    if (realProbs) {
+      let x = Math.random(), sum = 0;
+      for (let i = 0; i < realProbs.length; ++i) {
+        sum += realProbs[i];
+        if (x < sum) { idx = i; break; }
+      }
+      if (idx === undefined) idx = realProbs.length - 1;
+    } else {
+      idx = Math.floor(Math.random() * prizes.length);
+    }
+    const N = prizes.length;
     const sectorAngle = 2 * Math.PI / N;
-    let centerOfSegment = idx * sectorAngle + sectorAngle / 2;
-    let targetAngle = 1.5 * Math.PI - centerOfSegment;
-    while (targetAngle < 0) targetAngle += 2 * Math.PI;
-    while (targetAngle >= 2 * Math.PI) targetAngle -= 2 * Math.PI;
-    return targetAngle;
+    const centerOfSector = idx * sectorAngle + sectorAngle/2;
+    const targetAngle = 1.5*Math.PI - centerOfSector;
+    return { idx, targetAngle };
   }
 
-  function animateSpin(targetAngle, highlightIdx, duration = 4000) {
+  function animateSpin(targetAngle, highlightIdx, duration = 4000, prizeIdx) {
     spinning = true;
     updateButtonsState();
 
@@ -393,7 +386,7 @@
         currentAngle = targetAngle;
         spinning = false;
         drawWheel(highlightIdx);
-        showPrize();
+        showPrize(prizeIdx);
         lastSpinDone = true;
         updateButtonsState();
       }
@@ -401,17 +394,16 @@
     requestAnimationFrame(step);
   }
 
-  function showPrize() {
-    if (!currentPrize) return;
-    if (currentPrize.price === 0) {
-      prizeInfo.textContent = `Увы, пусто. Ничего не выиграли.`;
-      currentPrize = null;
-    } else {
-      prizeInfo.textContent = `Вы выиграли: ${currentPrize.emoji} ${currentPrize.label}! (Цена: ${currentPrize.price}⭐)`;
-      const invId = Math.random().toString(36).slice(2) + Date.now();
-      inventory.push({ ...currentPrize, invId });
-      currentPrize = null;
+  function showPrize(prizeIdx) {
+    if (prizeIdx === undefined) return;
+    let prize = currentPrizes[prizeIdx];
+    if (!prize || !prize.label) {
+      prizeInfo.textContent = `Увы, пусто.`;
+      return;
     }
+    prizeInfo.textContent = `Вы выиграли: ${prize.emoji} ${prize.label}! (Цена: ${prize.price}⭐)`;
+    const invId = Math.random().toString(36).slice(2) + Date.now();
+    inventory.push({ ...prize, invId });
     updateInventory();
     updateInventoryCount();
   }
@@ -440,12 +432,11 @@
     }
     balance -= currentCost;
     updateBalanceUI();
-    let idx = selectPrizeIdx();
-    currentPrize = { ...currentPrizes[idx] };
-    let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
+    let {idx, targetAngle} = getPrizeIdxAndTargetAngle(currentPrizes, null);
+    currentPrize = {...currentPrizes[idx]};
     lastSpinDone = false;
     updateButtonsState();
-    animateSpin(targetAngle, idx);
+    animateSpin(targetAngle, idx, 4000, idx);
   });
 
   spinAgainBtn.addEventListener("click", () => {
@@ -454,12 +445,11 @@
     prizeInfo.textContent = "";
     balance -= currentCost;
     updateBalanceUI();
-    let idx = selectPrizeIdx();
-    currentPrize = { ...currentPrizes[idx] };
-    let targetAngle = getTargetAngleEven(idx, currentPrizes.length);
+    let {idx, targetAngle} = getPrizeIdxAndTargetAngle(currentPrizes, null);
+    currentPrize = {...currentPrizes[idx]};
     lastSpinDone = false;
     updateButtonsState();
-    animateSpin(targetAngle, idx);
+    animateSpin(targetAngle, idx, 4000, idx);
   });
 
   sellAllBtn.onclick = function() {
@@ -473,14 +463,12 @@
     updateInventoryCount();
   };
 
-  // ========== Кнопка +1000 только для админа ==========
   document.getElementById("addStarsBtn").onclick = function () {
     balance += 1000;
     updateBalanceUI();
     updateProfile();
   };
 
-  // ========== Таблица шансов только для выбранной ставки ==========
   function renderChanceTableOnly(cost) {
     let html = `<div style="margin-bottom:9px;"><b>Ставка ${cost} ⭐</b><table class="chance-table"><tr><th>Приз</th><th>Цена</th></tr>`;
     prizesData[cost].forEach(item => {
@@ -490,7 +478,6 @@
     document.getElementById('chanceTables').innerHTML = html;
   }
 
-  // ========== Навигация ==========
   const navBtns = {
     profile: document.getElementById("navProfile"),
     roulette: document.getElementById("navRoulette"),
@@ -513,7 +500,6 @@
   navBtns.roulette.onclick = () => showScreen("roulette");
   navBtns.inventory.onclick = () => showScreen("inventory");
 
-  // ========== ИНИЦИАЛИЗАЦИЯ ==========
   updateBalanceUI();
   currentCost = 25;
   currentPrizes = prizesData[currentCost].map(x => ({...x}));
