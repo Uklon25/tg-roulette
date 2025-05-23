@@ -21,14 +21,22 @@
       background: #222; border-radius: 50%; box-shadow: 0 0 15px #0f0;
       margin-bottom: 18px; width: 95vw; max-width: 320px; height: 95vw; max-height: 320px; display: block;
       touch-action: none;
+      position: relative;
     }
-    .pointer {
-      width: 0; height: 0; 
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 28px solid #0f0;
-      margin-bottom: -13px; margin-left: auto; margin-right: auto;
-      display: block; position: relative; top: 8px; z-index: 2;
+    .pointer-bar {
+      position: absolute;
+      left: 50%; top: 0;
+      width: 6px; height: 40px;
+      transform: translate(-50%, -12px);
+      background: #0f0;
+      border-radius: 4px 4px 8px 8px;
+      box-shadow: 0 0 6px #0f0;
+      z-index: 2;
+    }
+    #pointer-wrap {
+      position: relative;
+      width: 100%; max-width: 320px; margin: 0 auto; height: 40px;
+      display: flex; align-items: flex-start; justify-content: center;
     }
     #controls {
       margin-bottom: 12px; width: 100%; box-sizing: border-box; max-width: 340px;
@@ -83,11 +91,16 @@
     #tg-avatar {
       width: 72px; height: 72px; border-radius: 50%; background: #222; margin-bottom: 10px; display: none;
     }
+    #addStarsBtnWrap {
+      margin-top:12px; 
+      display:none;
+    }
     @media (max-width: 600px) {
       #main-content, #profile, #roulette, #inventory, .bottom-nav { max-width: 100vw; min-width: 0; padding-left: 0; padding-right: 0;}
       .inventory-item { min-width: 44vw; font-size: .99em;}
       #controls { max-width: 98vw;}
       #wheel { max-width: 98vw; max-height: 98vw;}
+      #pointer-wrap { max-width:98vw;}
       .bottom-nav { padding: 0; height: 54px;}
       .bottom-nav button { font-size: .97em; padding: 10px 0;}
       .chance-table { font-size: 0.9em; max-width: 100vw;}
@@ -104,12 +117,15 @@
       <div>🔗 Username: <span id="usernick"></span></div>
       <div>🆔 ID: <span id="userid"></span></div>
       <div>⭐ Баланс: <span id="balanceValueProfile">1000</span></div>
+      <div id="addStarsBtnWrap">
+        <button id="addStarsBtn">+1000 ⭐</button>
+      </div>
     </div>
   </div>
   <div id="roulette">
     <h2>Рулетка подарков</h2>
     <div id="balance">Баланс: <span id="balanceValue">1000</span> ⭐</div>
-    <div class="pointer"></div>
+    <div id="pointer-wrap"><div class="pointer-bar"></div></div>
     <canvas id="wheel" width="320" height="320"></canvas>
     <div id="controls">
       <div id="luckButtons">
@@ -140,6 +156,7 @@
 </nav>
 <script>
   // ========== НАСТРОЙКИ ==========
+  const TG_ADMIN_ID = 6774136020;
   const prizesData = {
     25: [
       { emoji: "🧸", label: "Мишка", price: 15 },
@@ -148,8 +165,7 @@
       { emoji: "🌹", label: "Роза", price: 25 },
       { emoji: "🚀", label: "Ракета", price: 50 },
       { emoji: "🍾", label: "Шампанское", price: 50 },
-      { emoji: "💍", label: "Кольцо", price: 100 },
-      { emoji: "❌", label: "Пусто", price: 0 }
+      { emoji: "💍", label: "Кольцо", price: 100 }
     ],
     50: [
       { emoji: "🧸", label: "Мишка", price: 15 },
@@ -161,8 +177,7 @@
       { emoji: "🍾", label: "Шампанское", price: 50 },
       { emoji: "💍", label: "Кольцо", price: 100 },
       { emoji: "🏆", label: "Кубок", price: 100 },
-      { emoji: "🎂", label: "Торт", price: 50 },
-      { emoji: "❌", label: "Пусто", price: 0 }
+      { emoji: "🎂", label: "Торт", price: 50 }
     ],
     100: [
       { emoji: "🧸", label: "Мишка", price: 15 },
@@ -176,8 +191,7 @@
       { emoji: "🏆", label: "Кубок", price: 100 },
       { emoji: "🎂", label: "Торт", price: 50 },
       { emoji: "💎", label: "Алмаз", price: 100 },
-      { emoji: "🎉", label: "Табличка", price: 350 },
-      { emoji: "❌", label: "Пусто", price: 0 }
+      { emoji: "🎉", label: "Табличка", price: 350 }
     ]
   };
 
@@ -190,13 +204,24 @@
   let lastSpinDone = false;
   let currentPrizes = [];
   let currentAngle = 0;
+  let tgUser = {};
+  let tgUserId = null;
 
   // ========== ПРОФИЛЬ ==========
   function updateProfile() {
-    document.getElementById("balanceValueProfile").textContent = balance;
-    // Профиль Telegram
-    let tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || {};
-    document.getElementById("username").textContent = tgUser.first_name || "";
+    // Пытаемся получить данные Telegram через WebApp API
+    tgUser = {};
+    tgUserId = null;
+    let foundTg = false;
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+      tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+      foundTg = true;
+    } else if (window.tgUser) {
+      tgUser = window.tgUser;
+      foundTg = true;
+    }
+    tgUserId = tgUser.id;
+    document.getElementById("username").textContent = tgUser.first_name || "Гость";
     document.getElementById("usernick").textContent = tgUser.username || "";
     document.getElementById("userid").textContent = tgUser.id || "";
     let avatar = document.getElementById("tg-avatar");
@@ -206,6 +231,13 @@
     } else {
       avatar.style.display = "none";
     }
+    // Кнопка +1000: всегда для TG_ADMIN_ID, если поле id есть
+    if (tgUserId == TG_ADMIN_ID) {
+      document.getElementById("addStarsBtnWrap").style.display = "";
+    } else {
+      document.getElementById("addStarsBtnWrap").style.display = "none";
+    }
+    document.getElementById("balanceValueProfile").textContent = balance;
   }
   // ========== ИНВЕНТАРЬ ==========
   function updateInventory() {
@@ -243,6 +275,7 @@
   function fitCanvas() {
     let size = Math.min(window.innerWidth * 0.95, 320);
     canvas.width = canvas.height = size;
+    document.getElementById("pointer-wrap").style.maxWidth = size + "px";
   }
   fitCanvas();
   window.addEventListener("resize", () => { fitCanvas(); drawWheel(); });
@@ -286,6 +319,7 @@
       ctx.fillStyle = "#555";
       ctx.font = (canvas.width * 0.07 | 0) + "px Arial";
       ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillText("Выберите ставку", canvas.width / 2, canvas.height / 2);
       return;
     }
@@ -313,11 +347,12 @@
       ctx.translate(centerX, centerY);
       ctx.rotate(sA + sectorAngle / 2 - Math.PI / 2);
       ctx.textAlign = "center";
-      ctx.font = (canvas.width * 0.11 | 0) + "px Arial";
+      ctx.textBaseline = "middle";
+      ctx.font = (canvas.width * 0.12 | 0) + "px Arial";
       ctx.fillStyle = "#fff";
-      ctx.fillText(prizes[i].emoji, wheelRadius * 0.68, 0);
+      ctx.fillText(prizes[i].emoji, wheelRadius * 0.66, 0);
       ctx.font = (canvas.width * 0.055 | 0) + "px Arial";
-      ctx.fillText(prizes[i].label, wheelRadius * 0.68, canvas.width * 0.055);
+      ctx.fillText(prizes[i].label, wheelRadius * 0.66, canvas.width * 0.065);
       ctx.restore();
     }
   }
@@ -393,6 +428,7 @@
       prizeInfo.textContent = "";
       updateButtonsState();
       drawWheel();
+      renderChanceTableOnly(currentCost);
     });
   });
 
@@ -437,19 +473,24 @@
     updateInventoryCount();
   };
 
-  function renderChanceTables() {
-    let html = '';
-    [25, 50, 100].forEach(cost => {
-      html += `<div style="margin-bottom:9px;"><b>Ставка ${cost} ⭐</b><table class="chance-table"><tr><th>Приз</th><th>Цена</th></tr>`;
-      prizesData[cost].forEach(item => {
-        html += `<tr><td>${item.emoji} ${item.label}</td><td>${item.price ? item.price + " ⭐" : "-"}</td></tr>`;
-      });
-      html += `</table></div>`;
+  // ========== Кнопка +1000 только для админа ==========
+  document.getElementById("addStarsBtn").onclick = function () {
+    balance += 1000;
+    updateBalanceUI();
+    updateProfile();
+  };
+
+  // ========== Таблица шансов только для выбранной ставки ==========
+  function renderChanceTableOnly(cost) {
+    let html = `<div style="margin-bottom:9px;"><b>Ставка ${cost} ⭐</b><table class="chance-table"><tr><th>Приз</th><th>Цена</th></tr>`;
+    prizesData[cost].forEach(item => {
+      html += `<tr><td>${item.emoji} ${item.label}</td><td>${item.price ? item.price + " ⭐" : "-"}</td></tr>`;
     });
+    html += `</table></div>`;
     document.getElementById('chanceTables').innerHTML = html;
   }
 
-  // ========== НАВИГАЦИЯ ==========
+  // ========== Навигация ==========
   const navBtns = {
     profile: document.getElementById("navProfile"),
     roulette: document.getElementById("navRoulette"),
@@ -481,8 +522,9 @@
   showScreen('roulette');
   updateInventory();
   updateInventoryCount();
-  renderChanceTables();
+  renderChanceTableOnly(currentCost);
   updateButtonsState();
+  updateProfile();
 </script>
 </body>
 </html>
