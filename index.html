@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Рулетка подарков (прямоугольная)</title>
+  <title>AutoWin — Рулетка подарков</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body {
@@ -17,7 +17,6 @@
     #profile, #roulette, #inventory {
       width: 100%; max-width: 500px; box-sizing: border-box; padding: 0 8px;
     }
-    /* Прямоугольная рулетка */
     .rect-roulette-wrap {
       position: relative; width: 99vw; max-width: 420px; margin: 0 auto 22px auto;
       height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -48,7 +47,6 @@
       transform: scale(1.19);
       color: #121;
     }
-    /* Полоска-указатель */
     .pointer-bar-rect {
       position: absolute; left: 50%; top: -14px;
       width: 6px; height: 28px; transform: translateX(-50%);
@@ -120,15 +118,6 @@
       .bottom-nav button { font-size: .97em; padding: 10px 0;}
       .chance-table { font-size: 0.9em; max-width: 100vw;}
     }
-    .tg-sticker-img {
-      display: inline-block;
-      height: 32px; width:auto;
-      vertical-align: middle;
-      border-radius: 7px;
-      background: #222;
-      margin-left: 6px;
-      margin-right: 2px;
-    }
     .inv-tg-img {
       height: 28px; width:auto; border-radius: 5px; margin-left: 6px; background: #222;
     }
@@ -184,7 +173,7 @@
   <button id="navInventory">Инвентарь</button>
 </nav>
 <script>
-  // ----- Telegram gift "stickers" (just links, replace with your own if you want) -----
+  // --- Telegram gift images ---
   const telegramGiftImages = {
     "Сердце":  "https://emojiapi.dev/api/v1/2764/128.png",
     "Мишка":   "https://emojiapi.dev/api/v1/1f9f8/128.png",
@@ -197,11 +186,11 @@
     "Кольцо":  "https://emojiapi.dev/api/v1/1f48d/128.png",
     "Алмаз":   "https://emojiapi.dev/api/v1/1f48e/128.png",
     "Шампанское": "https://emojiapi.dev/api/v1/1f37e/128.png",
-    "Табличка": "img3", // Special, see below
+    "Табличка": "img3"
   };
   const tablichkaImg = "https://files.gptgo.ai/api/image/5b06e2f3-2c1a-4e45-b1e2-2d6cd8d75615.png";
 
-  // ----- Призы -----
+  // --- Призы ---
   const prizesData = {
     25: [
       { emoji: "🧸", label: "Мишка", price: 15 },
@@ -240,7 +229,9 @@
     ]
   };
 
-  const TG_ADMIN_ID = 6774136020;
+  // === TG ADMIN IDS ===
+  const TG_ADMIN_IDS = [6774136020, 123456789, 'Uklon25']; // Добавил твой логин как тест
+
   let balance = 1000;
   let inventory = [];
   let currentCost = 25;
@@ -260,12 +251,18 @@
   }
 
   function updateProfile() {
+    // Попытка получить данные Telegram WebApp, иначе тестовые
     tgUser = {};
     tgUserId = null;
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-      tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+    let user = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user);
+    if (user) {
+      tgUser = user;
+      tgUserId = user.id;
+    } else {
+      // ТЕСТ: если не Телеграм — фиктивные данные (для ПК/браузера)
+      tgUser = {first_name: "Uklon", username: "Uklon25", id: 6774136020};
+      tgUserId = tgUser.id;
     }
-    tgUserId = tgUser.id;
     document.getElementById("username").textContent = tgUser.first_name || "Гость";
     document.getElementById("usernick").textContent = tgUser.username || "";
     document.getElementById("userid").textContent = tgUser.id || "";
@@ -276,7 +273,8 @@
     } else {
       avatar.style.display = "none";
     }
-    if (tgUserId == TG_ADMIN_ID) {
+    // Кнопка +1000: показывать если твой id или логин есть в админах
+    if (TG_ADMIN_IDS.includes(tgUserId) || TG_ADMIN_IDS.includes(tgUser.username)) {
       document.getElementById("addStarsBtnWrap").style.display = "";
     } else {
       document.getElementById("addStarsBtnWrap").style.display = "none";
@@ -316,24 +314,14 @@
   const sellAllBtn = document.getElementById("sellAllBtn");
 
   // ========== Рулетка ==========
+  const inViewCount = 7; // всегда нечетное
 
-  // Сколько призов отображать в прямоугольной рулетке (должно быть нечетное)
-  const inViewCount = 7;
-
-  // Состояние анимации
   let rectAnim = {
-    offset: 0,    // текущий смещение в px
-    target: 0,    // целевое смещение в px
-    running: false,
-    startOffset: 0,
-    startTime: 0,
-    duration: 0,
-    prizeIdx: 0,  // на какой индекс выпал приз
-    lastPrizeIdx: 0
+    offset: 0, target: 0, running: false, startOffset: 0, startTime: 0, duration: 0,
+    prizeIdx: 0, lastPrizeIdx: 0
   };
 
   function renderRectRoulette(activeIdx, prizesArr) {
-    // prizesArr - текущий массив призов для отображения (скроллинг)
     const wrap = document.getElementById("rectRoulette");
     wrap.innerHTML = "";
     for(let i=0; i<prizesArr.length; ++i) {
@@ -350,33 +338,23 @@
   }
 
   function getPrizeIdxAndView(prizes) {
-    // Выбираем случайный приз (равновероятно)
     const winIdx = Math.floor(Math.random() * prizes.length);
-    // Для анимации: формируем массив из prizes, чтобы выигрышный элемент был по центру
-    // и по бокам еще по (inViewCount-1)/2 призов (всего inViewCount)
     let arr = [];
     let n = prizes.length;
-    // Чтобы можно было "прокрутить" несколько кругов для анимации, делаем длинный массив
     let circles = 3;
     for(let i=0;i<circles;i++) arr = arr.concat(prizes);
-    // Центрируем чтобы winIdx из середины массива оказался ровно посередине view
     let viewOffset = Math.floor(inViewCount/2);
     let start = prizes.length + winIdx - viewOffset;
-    let visible = arr.slice(start, start+inViewCount+6); // +6 чтобы анимация доходила
-    // Индекс в visible, который будет активным (выигрышным)
+    let visible = arr.slice(start, start+inViewCount+6);
     let active = viewOffset;
     return { winIdx, visible, active };
   }
 
-  // Анимация прокрутки рулетки
   function animateRectRoulette(visibleArr, winIdxInAll, cb) {
     const wrap = document.getElementById("rectRoulette");
-    // Размер одного приза
     let prizeW = wrap.firstChild ? wrap.firstChild.offsetWidth : 80;
     let viewOffset = Math.floor(inViewCount/2);
-    // Сколько всего элементов анимируем
     let total = visibleArr.length;
-    // Целевой сдвиг, чтобы выигрышный был по центру
     let targetOffset = prizeW * (winIdxInAll - viewOffset);
     rectAnim.running = true;
     rectAnim.startTime = performance.now();
@@ -387,11 +365,9 @@
     function step(now) {
       let t = (now - rectAnim.startTime) / rectAnim.duration;
       if (t > 1) t = 1;
-      // ease out
       let ease = 1 - Math.pow(1-t,3);
       rectAnim.offset = rectAnim.startOffset + (rectAnim.target-rectAnim.startOffset)*ease;
       wrap.style.transform = `translateX(${-rectAnim.offset}px)`;
-      // подсвечиваем центральный
       let idx = Math.round(rectAnim.offset/prizeW) + viewOffset;
       let children = wrap.children;
       for(let i=0;i<children.length;++i) children[i].classList.toggle("active", i===viewOffset);
@@ -412,17 +388,13 @@
     spinning = true;
     updateButtonsState();
     const {winIdx, visible, active} = getPrizeIdxAndView(currentPrizes);
-    renderRectRoulette(-1, visible); // отрисовка до анимации
-    // ждем render
+    renderRectRoulette(-1, visible);
     setTimeout(() => {
-      // Анимация
       animateRectRoulette(visible, active + Math.floor(Math.random()*2), (centerIdx) => {
         spinning = false;
         updateButtonsState();
-        // Приз в центральном элементе
         let winPrize = visible[centerIdx];
         showPrizeRect(winPrize);
-        // Добавить в инвентарь
         const invId = Math.random().toString(36).slice(2) + Date.now();
         inventory.push({ ...winPrize, invId });
         updateInventory();
