@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Рулетка подарков</title>
+  <title>Рулетка подарков (прямоугольная)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body {
@@ -10,33 +10,50 @@
       min-height: 100vh; width: 100vw; overflow-x: hidden;
     }
     #main-content {
-      flex: 1; width: 100vw; max-width: 430px; margin: 0 auto;
+      flex: 1; width: 100vw; max-width: 500px; margin: 0 auto;
       box-sizing: border-box; padding-top: 16px;
       display: flex; flex-direction: column; align-items: center;
     }
     #profile, #roulette, #inventory {
-      width: 100%; max-width: 430px; box-sizing: border-box; padding: 0 8px;
+      width: 100%; max-width: 500px; box-sizing: border-box; padding: 0 8px;
     }
-    #wheel {
-      background: #222; border-radius: 50%; box-shadow: 0 0 15px #0f0;
-      margin-bottom: 18px; width: 95vw; max-width: 320px; height: 95vw; max-height: 320px; display: block;
-      touch-action: none;
+    /* Прямоугольная рулетка */
+    .rect-roulette-wrap {
+      position: relative; width: 99vw; max-width: 420px; margin: 0 auto 22px auto;
+      height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .rect-roulette {
+      display: flex; flex-direction: row; align-items: center;
+      overflow: hidden; width: 100%; height: 90px; border-radius: 18px; background: #191919;
+      box-shadow: 0 0 14px #0a0;
+      border: 2px solid #205b20;
       position: relative;
     }
-    .pointer-bar {
-      position: absolute;
-      left: 50%; top: 0;
-      width: 6px; height: 40px;
-      transform: translate(-50%, -12px);
-      background: #0f0;
-      border-radius: 4px 4px 8px 8px;
-      box-shadow: 0 0 6px #0f0;
-      z-index: 2;
-    }
-    #pointer-wrap {
+    .rect-prize {
+      flex: 0 0 80px; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 1em; transition: transform .2s;
+      background: #232;
+      border-right: 1px solid #205b20;
+      border-left: 1px solid #205b20;
       position: relative;
-      width: 100%; max-width: 320px; margin: 0 auto; height: 40px;
-      display: flex; align-items: flex-start; justify-content: center;
+    }
+    .rect-prize:last-child { border-right: none; }
+    .rect-prize .emoji { font-size: 2em; margin-bottom: 3px;}
+    .rect-prize .label { font-size: .97em; color: #fff;}
+    .rect-prize .price { font-size: .87em; color: #af8; margin-top: 1px;}
+    .rect-prize.active {
+      background: #35e535 !important;
+      box-shadow: 0 0 10px #0f0, 0 0 0 2px #fff;
+      z-index: 1;
+      transform: scale(1.19);
+      color: #121;
+    }
+    /* Полоска-указатель */
+    .pointer-bar-rect {
+      position: absolute; left: 50%; top: -14px;
+      width: 6px; height: 28px; transform: translateX(-50%);
+      background: #0f0; border-radius: 5px 5px 12px 12px; box-shadow: 0 0 10px #0f0;
+      z-index: 10;
     }
     #controls {
       margin-bottom: 12px; width: 100%; box-sizing: border-box; max-width: 340px;
@@ -54,10 +71,9 @@
     button:disabled { background: #444; cursor: not-allowed; }
     #balance { font-size: 1.2em; margin-bottom: 12px; text-align: center; }
     #prizeInfo { font-size: 1.1em; margin-top: 12px; min-height: 60px; text-align: center; word-break: break-word;}
-    #prizeEmojiImg { display: block; margin: 9px auto 0 auto; }
     #luckButtons button.active { background: #4caf50; box-shadow: 0 0 8px #4caf50; }
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 430px; margin: 0 auto; z-index: 100;
+      position: fixed; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 500px; margin: 0 auto; z-index: 100;
       display: flex; justify-content: space-around; background: #222; border-top: 1px solid #333; padding: 0; height: 56px;
     }
     .bottom-nav button {
@@ -98,8 +114,8 @@
       #main-content, #profile, #roulette, #inventory, .bottom-nav { max-width: 100vw; min-width: 0; padding-left: 0; padding-right: 0;}
       .inventory-item { min-width: 44vw; font-size: .99em;}
       #controls { max-width: 98vw;}
-      #wheel { max-width: 98vw; max-height: 98vw;}
-      #pointer-wrap { max-width:98vw;}
+      .rect-roulette-wrap, .rect-roulette { max-width: 99vw; }
+      .rect-prize { flex-basis: 60px; height: 75px; font-size: .85em;}
       .bottom-nav { padding: 0; height: 54px;}
       .bottom-nav button { font-size: .97em; padding: 10px 0;}
       .chance-table { font-size: 0.9em; max-width: 100vw;}
@@ -136,8 +152,10 @@
   <div id="roulette">
     <h2>Рулетка подарков</h2>
     <div id="balance">Баланс: <span id="balanceValue">1000</span> ⭐</div>
-    <div id="pointer-wrap"><div class="pointer-bar"></div></div>
-    <canvas id="wheel" width="320" height="320"></canvas>
+    <div class="rect-roulette-wrap">
+      <div class="pointer-bar-rect"></div>
+      <div class="rect-roulette" id="rectRoulette"></div>
+    </div>
     <div id="controls">
       <div id="luckButtons">
         <button data-cost="25">Ставка 25 ⭐</button>
@@ -181,9 +199,7 @@
     "Шампанское": "https://emojiapi.dev/api/v1/1f37e/128.png",
     "Табличка": "img3", // Special, see below
   };
-
-  // Special image for "Табличка"
-  const tablichkaImg = "https://files.gptgo.ai/api/image/5b06e2f3-2c1a-4e45-b1e2-2d6cd8d75615.png"; // <-- Image 3 from you
+  const tablichkaImg = "https://files.gptgo.ai/api/image/5b06e2f3-2c1a-4e45-b1e2-2d6cd8d75615.png";
 
   // ----- Призы -----
   const prizesData = {
@@ -232,7 +248,6 @@
   let currentPrize = null;
   let lastSpinDone = false;
   let currentPrizes = prizesData[currentCost].map(x => ({...x}));
-  let currentAngle = 0;
   let tgUser = {};
   let tgUserId = null;
 
@@ -299,147 +314,124 @@
   const spinBtn = document.getElementById("spinBtn");
   const spinAgainBtn = document.getElementById("spinAgainBtn");
   const sellAllBtn = document.getElementById("sellAllBtn");
-  const canvas = document.getElementById("wheel");
-  const ctx = canvas.getContext("2d");
 
-  function fitCanvas() {
-    let size = Math.min(window.innerWidth * 0.95, 320);
-    canvas.width = canvas.height = size;
-    document.getElementById("pointer-wrap").style.maxWidth = size + "px";
-  }
-  fitCanvas();
-  window.addEventListener("resize", () => { fitCanvas(); drawWheel(); });
+  // ========== Рулетка ==========
 
-  function getWheelGeom() {
-    return {
-      wheelRadius: canvas.width / 2 - 10,
-      centerX: canvas.width / 2,
-      centerY: canvas.height / 2
-    };
-  }
+  // Сколько призов отображать в прямоугольной рулетке (должно быть нечетное)
+  const inViewCount = 7;
 
-  function updateBalanceUI() {
-    balanceElem.textContent = balance;
-    document.getElementById("balanceValueProfile").textContent = balance;
-  }
+  // Состояние анимации
+  let rectAnim = {
+    offset: 0,    // текущий смещение в px
+    target: 0,    // целевое смещение в px
+    running: false,
+    startOffset: 0,
+    startTime: 0,
+    duration: 0,
+    prizeIdx: 0,  // на какой индекс выпал приз
+    lastPrizeIdx: 0
+  };
 
-  function updateButtonsState() {
-    if (spinning) {
-      spinBtn.style.display = "none";
-      spinAgainBtn.style.display = "none";
-      luckButtons.forEach(btn => btn.disabled = true);
-      return;
-    }
-    if (lastSpinDone) {
-      spinBtn.style.display = "none";
-      spinAgainBtn.style.display = "";
-    } else {
-      spinBtn.style.display = "";
-      spinAgainBtn.style.display = "none";
-    }
-    spinBtn.disabled = !currentCost || balance < currentCost;
-    spinAgainBtn.disabled = !currentCost || balance < currentCost;
-    luckButtons.forEach(btn => btn.disabled = spinning);
-  }
-
-  function drawWheel(highlightSegmentIdx = null) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (!currentCost) {
-      ctx.fillStyle = "#555";
-      ctx.font = (canvas.width * 0.07 | 0) + "px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Выберите ставку", canvas.width / 2, canvas.height / 2);
-      return;
-    }
-    const prizes = currentPrizes;
-    let startAngle = currentAngle;
-    const { wheelRadius, centerX, centerY } = getWheelGeom();
-    const N = prizes.length;
-    const sectorAngle = 2 * Math.PI / N;
-
-    for (let i = 0; i < N; ++i) {
-      let prize = prizes[i];
-      let sA = startAngle + i * sectorAngle;
-      let eA = startAngle + (i + 1) * sectorAngle;
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, wheelRadius, sA, eA);
-      ctx.closePath();
-      ctx.fillStyle = (i % 2 === 0) ? "#0b0" : "#097c09";
-      if (highlightSegmentIdx === i) ctx.fillStyle = "#26e326";
-      ctx.fill();
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(sA + sectorAngle / 2 - Math.PI / 2);
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = (canvas.width * 0.12 | 0) + "px Arial";
-      ctx.fillStyle = "#fff";
-      ctx.fillText((prize && prize.emoji) ? prize.emoji : "❓", wheelRadius * 0.66, 0);
-      ctx.font = (canvas.width * 0.055 | 0) + "px Arial";
-      ctx.fillText((prize && prize.label) ? prize.label : "Пусто", wheelRadius * 0.66, canvas.width * 0.065);
-      ctx.restore();
+  function renderRectRoulette(activeIdx, prizesArr) {
+    // prizesArr - текущий массив призов для отображения (скроллинг)
+    const wrap = document.getElementById("rectRoulette");
+    wrap.innerHTML = "";
+    for(let i=0; i<prizesArr.length; ++i) {
+      const p = prizesArr[i];
+      let div = document.createElement("div");
+      div.className = "rect-prize" + (i === activeIdx ? " active" : "");
+      div.innerHTML = `
+        <span class="emoji">${p.emoji}</span>
+        <span class="label">${p.label}</span>
+        <span class="price">${p.price} ⭐</span>
+      `;
+      wrap.appendChild(div);
     }
   }
 
-  function getPrizeIdxAndTargetAngle(prizes, realProbs) {
-    let idx;
-    if (realProbs) {
-      let x = Math.random(), sum = 0;
-      for (let i = 0; i < realProbs.length; ++i) {
-        sum += realProbs[i];
-        if (x < sum) { idx = i; break; }
-      }
-      if (idx === undefined) idx = realProbs.length - 1;
-    } else {
-      idx = Math.floor(Math.random() * prizes.length);
-    }
-    const N = prizes.length;
-    const sectorAngle = 2 * Math.PI / N;
-    const centerOfSector = idx * sectorAngle + sectorAngle/2;
-    const targetAngle = 1.5*Math.PI - centerOfSector;
-    return { idx, targetAngle };
+  function getPrizeIdxAndView(prizes) {
+    // Выбираем случайный приз (равновероятно)
+    const winIdx = Math.floor(Math.random() * prizes.length);
+    // Для анимации: формируем массив из prizes, чтобы выигрышный элемент был по центру
+    // и по бокам еще по (inViewCount-1)/2 призов (всего inViewCount)
+    let arr = [];
+    let n = prizes.length;
+    // Чтобы можно было "прокрутить" несколько кругов для анимации, делаем длинный массив
+    let circles = 3;
+    for(let i=0;i<circles;i++) arr = arr.concat(prizes);
+    // Центрируем чтобы winIdx из середины массива оказался ровно посередине view
+    let viewOffset = Math.floor(inViewCount/2);
+    let start = prizes.length + winIdx - viewOffset;
+    let visible = arr.slice(start, start+inViewCount+6); // +6 чтобы анимация доходила
+    // Индекс в visible, который будет активным (выигрышным)
+    let active = viewOffset;
+    return { winIdx, visible, active };
   }
 
-  function animateSpin(targetAngle, highlightIdx, duration = 4000, prizeIdx) {
-    spinning = true;
-    updateButtonsState();
+  // Анимация прокрутки рулетки
+  function animateRectRoulette(visibleArr, winIdxInAll, cb) {
+    const wrap = document.getElementById("rectRoulette");
+    // Размер одного приза
+    let prizeW = wrap.firstChild ? wrap.firstChild.offsetWidth : 80;
+    let viewOffset = Math.floor(inViewCount/2);
+    // Сколько всего элементов анимируем
+    let total = visibleArr.length;
+    // Целевой сдвиг, чтобы выигрышный был по центру
+    let targetOffset = prizeW * (winIdxInAll - viewOffset);
+    rectAnim.running = true;
+    rectAnim.startTime = performance.now();
+    rectAnim.duration = 1800 + Math.random()*1000;
+    rectAnim.startOffset = rectAnim.offset;
+    rectAnim.target = targetOffset;
 
-    let start = null;
-    let startAngleAnim = currentAngle % (2 * Math.PI);
-    if (startAngleAnim < 0) startAngleAnim += 2 * Math.PI;
-    let diffAngle = targetAngle - startAngleAnim + (4 * 2 * Math.PI);
-
-    function step(timestamp) {
-      if (!start) start = timestamp;
-      let elapsed = timestamp - start;
-      let progress = Math.min(elapsed / duration, 1);
-      let eased = 1 - Math.pow(1 - progress, 3);
-      currentAngle = startAngleAnim + diffAngle * eased;
-      drawWheel(highlightIdx);
-      if (progress < 1) {
+    function step(now) {
+      let t = (now - rectAnim.startTime) / rectAnim.duration;
+      if (t > 1) t = 1;
+      // ease out
+      let ease = 1 - Math.pow(1-t,3);
+      rectAnim.offset = rectAnim.startOffset + (rectAnim.target-rectAnim.startOffset)*ease;
+      wrap.style.transform = `translateX(${-rectAnim.offset}px)`;
+      // подсвечиваем центральный
+      let idx = Math.round(rectAnim.offset/prizeW) + viewOffset;
+      let children = wrap.children;
+      for(let i=0;i<children.length;++i) children[i].classList.toggle("active", i===viewOffset);
+      if (t < 1) {
         requestAnimationFrame(step);
       } else {
-        currentAngle = targetAngle;
-        spinning = false;
-        drawWheel(highlightIdx);
-        showPrize(prizeIdx);
-        lastSpinDone = true;
-        updateButtonsState();
+        rectAnim.running = false;
+        wrap.style.transform = `translateX(${-rectAnim.target}px)`;
+        for(let i=0;i<children.length;++i) children[i].classList.toggle("active", i===viewOffset);
+        cb && cb(viewOffset);
       }
     }
     requestAnimationFrame(step);
   }
 
-  function showPrize(prizeIdx) {
-    if (prizeIdx === undefined) return;
-    let prize = currentPrizes[prizeIdx];
+  function startRectRouletteSpin() {
+    if (spinning) return;
+    spinning = true;
+    updateButtonsState();
+    const {winIdx, visible, active} = getPrizeIdxAndView(currentPrizes);
+    renderRectRoulette(-1, visible); // отрисовка до анимации
+    // ждем render
+    setTimeout(() => {
+      // Анимация
+      animateRectRoulette(visible, active + Math.floor(Math.random()*2), (centerIdx) => {
+        spinning = false;
+        updateButtonsState();
+        // Приз в центральном элементе
+        let winPrize = visible[centerIdx];
+        showPrizeRect(winPrize);
+        // Добавить в инвентарь
+        const invId = Math.random().toString(36).slice(2) + Date.now();
+        inventory.push({ ...winPrize, invId });
+        updateInventory();
+        updateInventoryCount();
+      });
+    }, 10);
+  }
+
+  function showPrizeRect(prize) {
     if (!prize || !prize.label) {
       prizeInfo.innerHTML = `Увы, пусто.`;
       return;
@@ -453,11 +445,6 @@
             <img id="prizeEmojiImg" src="${tgImg}" alt="tg-img" style="height:54px;max-width:90px;display:block;margin:7px auto 0 auto;">
           </div>`
         : "");
-    // Добавляем в инвентарь
-    const invId = Math.random().toString(36).slice(2) + Date.now();
-    inventory.push({ ...prize, invId });
-    updateInventory();
-    updateInventoryCount();
   }
 
   luckButtons.forEach(btn => {
@@ -471,7 +458,7 @@
       lastSpinDone = false;
       prizeInfo.textContent = "";
       updateButtonsState();
-      drawWheel();
+      renderRectRoulette(Math.floor(inViewCount/2), getPrizeIdxAndView(currentPrizes).visible);
       renderChanceTableOnly(currentCost);
     });
   });
@@ -484,24 +471,19 @@
     }
     balance -= currentCost;
     updateBalanceUI();
-    let {idx, targetAngle} = getPrizeIdxAndTargetAngle(currentPrizes, null);
-    currentPrize = {...currentPrizes[idx]};
-    lastSpinDone = false;
+    startRectRouletteSpin();
+    lastSpinDone = true;
     updateButtonsState();
-    animateSpin(targetAngle, idx, 4000, idx);
   });
 
   spinAgainBtn.addEventListener("click", () => {
     if (spinning || !currentCost || balance < currentCost) return;
-    currentPrize = null;
     prizeInfo.textContent = "";
     balance -= currentCost;
     updateBalanceUI();
-    let {idx, targetAngle} = getPrizeIdxAndTargetAngle(currentPrizes, null);
-    currentPrize = {...currentPrizes[idx]};
-    lastSpinDone = false;
+    startRectRouletteSpin();
+    lastSpinDone = true;
     updateButtonsState();
-    animateSpin(targetAngle, idx, 4000, idx);
   });
 
   sellAllBtn.onclick = function() {
@@ -552,11 +534,12 @@
   navBtns.roulette.onclick = () => showScreen("roulette");
   navBtns.inventory.onclick = () => showScreen("inventory");
 
+  // ========== ИНИЦИАЛИЗАЦИЯ ==========
   updateBalanceUI();
   currentCost = 25;
   currentPrizes = prizesData[currentCost].map(x => ({...x}));
   luckButtons[0].classList.add('active');
-  drawWheel();
+  renderRectRoulette(Math.floor(inViewCount/2), getPrizeIdxAndView(currentPrizes).visible);
   showScreen('roulette');
   updateInventory();
   updateInventoryCount();
