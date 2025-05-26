@@ -47,6 +47,7 @@
             background: #191919;
             box-shadow: 0 0 14px #0a0;
             border: 2px solid #205b20;
+            image-rendering: pixelated;
         }
 
         .pointer-bar {
@@ -87,8 +88,8 @@
         }
 
         button {
-            background: var(--tg-theme-button-color, #0a0);
-            color: var(--tg-theme-button-text-color, #cfc);
+            background: #0a0;
+            color: #cfc;
             border: none;
             padding: 10px 12px;
             margin: 5px 3px;
@@ -104,7 +105,8 @@
         }
 
         button:disabled {
-            background: #444;
+            background: #232323;
+            color: #666;
             cursor: not-allowed;
             opacity: 0.7;
         }
@@ -124,7 +126,7 @@
         }
 
         #luckButtons button.active {
-            background: #4caf50;
+            background: #2cb72c;
             box-shadow: 0 0 8px #4caf50;
         }
 
@@ -139,7 +141,7 @@
             z-index: 100;
             display: flex;
             justify-content: space-around;
-            background: var(--tg-theme-secondary-bg-color, #222);
+            background: #1a1a1a;
             border-top: 1px solid #333;
             padding: 0;
             height: 56px;
@@ -151,8 +153,8 @@
             font-size: 1.05em;
             padding: 13px 0;
             border-radius: 5px;
-            background: var(--tg-theme-bg-color, #111);
-            color: var(--tg-theme-text-color, #eee);
+            background: #232323;
+            color: #eee;
             border: none;
             transition: background .25s;
             min-width: 0;
@@ -163,12 +165,11 @@
         }
 
         .bottom-nav button.active {
-            background: var(--tg-theme-button-color, #0a0);
-            color: var(--tg-theme-button-text-color, #fff);
+            background: #0a0;
+            color: #fff;
             box-shadow: 0 0 8px #0f0;
         }
-
-        .inventory-list {
+                .inventory-list {
             display: flex;
             flex-direction: column;
             gap: 7px;
@@ -179,12 +180,12 @@
         }
 
         .inventory-item {
-            background: var(--tg-theme-secondary-bg-color, #232323);
+            background: #232323;
             border-radius: 8px;
             padding: 10px;
             display: flex;
             align-items: center;
-            color: var(--tg-theme-text-color, #fff);
+            color: #fff;
             font-size: 1em;
             border: 1px solid #333;
             margin: 3px 0;
@@ -197,7 +198,7 @@
             padding: 20px 0 8px 0;
             font-size: 1.1em;
             text-align: center;
-            color: var(--tg-theme-text-color, #fff);
+            color: #fff;
         }
 
         #tg-avatar {
@@ -224,7 +225,7 @@
         }
 
         h2 {
-            color: var(--tg-theme-text-color, #fff);
+            color: #fff;
             text-align: center;
         }
 
@@ -247,471 +248,201 @@
 </head>
 <body>
     <div id="main-content">
-        <div id="profile" style="display:none;">
-            <h2>Профиль</h2>
-            <div class="profile-info">
-                <img id="tg-avatar" src="" alt="Аватар">
-                <div>👤 Имя: <span id="username">User</span></div>
-                <div>🔗 Username: <span id="usernick"></span></div>
-                <div>🆔 ID: <span id="userid"></span></div>
-                <div>⭐ Баланс: <span id="balanceValueProfile">1000</span></div>
-                <div id="addStarsBtnWrap" style="display:none;">
-                    <button id="addStarsBtn">+1000 ⭐</button>
-                </div>
-            </div>
+        <div class="roulette-wrap">
+            <div class="pointer-bar"></div>
+            <canvas id="rouletteCanvas" width="420" height="90"></canvas>
         </div>
 
-        <div id="roulette">
-            <h2>Рулетка подарков</h2>
-            <div id="balance">Баланс: <span id="balanceValue">1000</span> ⭐</div>
-            
-            <div class="roulette-wrap">
-                <div class="pointer-bar"></div>
-                <canvas id="rouletteCanvas"></canvas>
+        <div id="controls">
+            <div id="balance">Баланс: 842 ⭐</div>
+            <div id="luckButtons">
+                <button onclick="spin(25)" class="bet-btn">Ставка 25 ⭐</button>
+                <button onclick="spin(50)" class="bet-btn">Ставка 50 ⭐</button>
+                <button onclick="spin(100)" class="bet-btn">Ставка 100 ⭐</button>
             </div>
-
-            <div id="controls">
-                <div id="luckButtons">
-                    <button data-cost="25">Ставка 25 ⭐</button>
-                    <button data-cost="50">Ставка 50 ⭐</button>
-                    <button data-cost="100">Ставка 100 ⭐</button>
-                </div>
-                <div>
-                    <button id="spinBtn" disabled>Крутить</button>
-                    <button id="spinAgainBtn" style="display:none;">Крутить ещё</button>
-                </div>
-            </div>
-
+            <button onclick="spin()" id="spinAgain">Крутить ещё</button>
             <div id="prizeInfo"></div>
-        </div>
-
-        <div id="inventory" style="display:none;">
-            <h2>Инвентарь</h2>
-            <button class="sell-all-btn" id="sellAllBtn">Продать всё</button>
-            <div id="inventoryCount" style="color:#eee;font-size:1.07em;margin-bottom:4px;text-align:center;width:100%"></div>
-            <div id="inventoryList" class="inventory-list"></div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <button id="navProfile">Профиль</button>
-        <button id="navRoulette" class="active">Рулетка</button>
-        <button id="navInventory">Инвентарь</button>
-    </nav>
+        <button onclick="showRoulette()" class="active">Рулетка</button>
+        <button onclick="showInventory()">Инвентарь</button>
+        <button onclick="showProfile()">Профиль</button>
+    </nav>     
+       <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
 
-    <script>
-        // Конфигурация рулетки
-        const CANVAS_CONFIG = {
-            width: 420,
-            height: 90,
-            itemWidth: 80,
-            visibleItems: 7,
-            animation: {
-                duration: {
-                    min: 3000,
-                    max: 4000
-                }
-            }
-        };
-
-        // Призы и шансы
-        const chances = {
-            "25": [
-                ["🧸 Плюшевый мишка", 15.37],
-                ["❤️ Сердце с бантом", 15.37],
-                ["🎁 Подарочная коробка", 27],
-                ["🌹 Красная роза", 27],
-                ["🚀 Ракета", 11.21],
-                ["🍾 Шампанское", 11.21],
-                ["💍 Кольцо с бриллиантом", 20.86],
-                ["❌ Пустая ячейка", -0.98]
-            ],
-            "50": [
-                ["🧸 Плюшевый мишка", 2.08],
-                ["❤️ Сердце с бантом", 2.08],
-                ["🎁 Подарочная коробка", 5.47],
-                ["🌹 Красная роза", 5.47],
-                ["💐 Букет цветов", 14.5],
-                ["🚀 Ракета", 14.5],
-                ["🍾 Шампанское", 14.5],
-                ["💍 Кольцо с бриллиантом", 11.48],
-                ["🏆 Кубок", 11.48],
-                ["🎂 Торт с свечами", 14.5],
-                ["❌ Пустая ячейка", 0]
-            ],
-            "100": [
-                ["🧸 Плюшевый мишка", -2.39],
-                ["❤️ Сердце с бантом", -2.39],
-                ["🎁 Подарочная коробка", 0.02],
-                ["🌹 Красная роза", 0.02],
-                ["💐 Букет цветов", 0.35],
-                ["🚀 Ракета", 0.35],
-                ["🍾 Шампанское", 0.02],
-                ["💍 Кольцо с бриллиантом", 8],
-                ["🏆 Кубок", 8],
-                ["🎂 Торт с свечами", 0.02],
-                ["💎 Алмаз", 8],
-                ["🎉 Happy B-day табличка", -5.5],
-                ["❌ Пустая ячейка", 10]
-            ]
-        };
-
-        const prizeValues = {
-            "🧸 Плюшевый мишка": { emoji: "🧸", label: "Мишка", price: 13 },
-            "❤️ Сердце с бантом": { emoji: "❤️", label: "Сердце", price: 13 },
-            "🎁 Подарочная коробка": { emoji: "🎁", label: "Коробка", price: 21 },
-            "🌹 Красная роза": { emoji: "🌹", label: "Роза", price: 21 },
-            "💐 Букет цветов": { emoji: "💐", label: "Букет", price: 42 },
-            "🚀 Ракета": { emoji: "🚀", label: "Ракета", price: 42 },
-            "🍾 Шампанское": { emoji: "🍾", label: "Шампанское", price: 42 },
-            "💍 Кольцо с бриллиантом": { emoji: "💍", label: "Кольцо", price: 84 },
-            "🏆 Кубок": { emoji: "🏆", label: "Кубок", price: 84 },
-            "🎂 Торт с свечами": { emoji: "🎂", label: "Торт", price: 84 },
-            "💎 Алмаз": { emoji: "💎", label: "Алмаз", price: 84 },
-            "🎉 Happy B-day табличка": { emoji: "🎉", label: "Табличка", price: 350 },
-            "❌ Пустая ячейка": { emoji: "❌", label: "Пусто", price: 0 }
-        };
-
-        // Инициализация
-        let balance = 1000;
-        let inventory = [];
-        let currentCost = null;
-        let spinning = false;
-        let currentPrize = null;
-        let lastSpinDone = false;
-        let currentPrizes = [];
-        let tgUser = {};
-        let tgUserId = null;
-
-        // Получаем элементы DOM
         const canvas = document.getElementById('rouletteCanvas');
         const ctx = canvas.getContext('2d');
-        const balanceElem = document.getElementById("balanceValue");
-        const prizeInfo = document.getElementById("prizeInfo");
-        const luckButtons = [...document.querySelectorAll("#luckButtons button")];
-        const spinBtn = document.getElementById("spinBtn");
-        const spinAgainBtn = document.getElementById("spinAgainBtn");
-        const sellAllBtn = document.getElementById("sellAllBtn");
-
-        // Настройка Canvas
-        canvas.width = CANVAS_CONFIG.width;
-        canvas.height = CANVAS_CONFIG.height;
-
-        // Функции отрисовки
-        function drawPrizeItem(prize, x, isActive) {
-            // Фон ячейки
-            ctx.fillStyle = isActive ? '#35e535' : '#232323';
-            ctx.fillRect(x, 0, CANVAS_CONFIG.itemWidth, CANVAS_CONFIG.height);
-            
-            // Границы
-            ctx.strokeStyle = '#205b20';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, 0, CANVAS_CONFIG.itemWidth, CANVAS_CONFIG.height);
-
-            // Эмодзи
-            ctx.font = '24px Arial';
+        const prizes = [
+            '100 ⭐', '150 ⭐', '200 ⭐', '250 ⭐', '300 ⭐', '350 ⭐',
+            '400 ⭐', '450 ⭐', '500 ⭐', 'VIP', '1000 ⭐', 'СУПЕР-VIP'
+        ];
+        
+        let spinning = false;
+        let currentRotation = 0;
+        let targetRotation = 0;
+        let spinStartTime = 0;
+        let spinDuration = 0;
+        let selectedPrize = null;
+        
+        function drawPrize(x, text, highlight = false) {
+            ctx.fillStyle = highlight ? '#2a2' : '#232323';
+            ctx.fillRect(x, 0, 70, 90);
             ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(prize.emoji, x + CANVAS_CONFIG.itemWidth/2, 30);
-            
-            // Название
-            ctx.font = '14px Arial';
-            ctx.fillText(prize.label, x + CANVAS_CONFIG.itemWidth/2, 55);
-            
-            // Цена
-            ctx.font = '12px Arial';
-            ctx.fillStyle = '#af8';
-            ctx.fillText(`${prize.price} ⭐`, x + CANVAS_CONFIG.itemWidth/2, 75);
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x + 35, 45);
         }
 
-        function renderRoulette(activeIdx, prizesArr) {
+        function drawRoulette() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            prizesArr.forEach((prize, i) => {
-                drawPrizeItem(prize, i * CANVAS_CONFIG.itemWidth, i === activeIdx);
-            });
+            
+            const visiblePrizes = 6;
+            const prizeWidth = 70;
+            const offset = (currentRotation % prizeWidth) * -1;
+            
+            let startIdx = Math.floor(currentRotation / prizeWidth) % prizes.length;
+            if(startIdx < 0) startIdx += prizes.length;
+            
+            for(let i = 0; i < visiblePrizes + 1; i++) {
+                const idx = (startIdx + i) % prizes.length;
+                const x = offset + i * prizeWidth;
+                drawPrize(x, prizes[idx], idx === selectedPrize);
+            }
         }
 
-        function generatePrizes(cost) {
-            const chanceList = chances[cost];
-            const prizes = [];
-            let totalChance = 0;
-            
-            for (const item of chanceList) {
-                const chance = Math.max(0, item[1]);
-                totalChance += chance;
-            }
-
-            for (const [name, originalChance] of chanceList) {
-                let chance = Math.max(0, originalChance);
-                const prize = prizeValues[name];
-                if (prize) {
-                    prizes.push({ ...prize, chance });
-                }
-            }
-            
-            return prizes;
+        function easeOutBack(x) {
+            const c1 = 1.70158;
+            const c3 = c1 + 1;
+            return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
         }
 
-        function getPrizeIdxAndView(prizes) {
-            let totalChance = 0;
-            prizes.forEach(prize => {
-                totalChance += prize.chance;
-            });
-
-            let randomNumber = Math.random() * totalChance;
-            let cumulativeChance = 0;
-            let winIdx = 0;
-
-            for (let i = 0; i < prizes.length; i++) {
-                cumulativeChance += prizes[i].chance;
-                if (randomNumber < cumulativeChance) {
-                    winIdx = i;
-                    break;
-                }
-            }
-
-            let visible = [...prizes, ...prizes, ...prizes];
-            let active = prizes.length + winIdx;
-            
-            return { winIdx, visible, active };
-        }
-
-        function animateRoulette(prizes, targetIdx, callback) {
-            const startTime = performance.now();
-            const duration = CANVAS_CONFIG.animation.duration.min + 
-                Math.random() * (CANVAS_CONFIG.animation.duration.max - CANVAS_CONFIG.animation.duration.min);
-            
-            let currentOffset = 0;
-            const targetOffset = CANVAS_CONFIG.itemWidth * targetIdx;
-
-            function animate(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
+        function animate(currentTime) {
+            if (spinning) {
+                const elapsed = currentTime - spinStartTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
                 
-                // Плавное замедление
-                const easeOut = t => 1 - Math.pow(1 - t, 4);
-                const ease = easeOut(progress);
-                
-                currentOffset = targetOffset * ease;
-                
-                // Очищаем и рисуем
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                prizes.forEach((prize, i) => {
-                    const x = i * CANVAS_CONFIG.itemWidth - currentOffset;
-                    const isCenter = Math.abs(x - canvas.width/2 + CANVAS_CONFIG.itemWidth/2) < CANVAS_CONFIG.itemWidth/2;
-                    drawPrizeItem(prize, x, isCenter);
-                });
-
                 if (progress < 1) {
+                    const eased = easeOutBack(progress);
+                    currentRotation = targetRotation * eased;
+                    drawRoulette();
                     requestAnimationFrame(animate);
                 } else {
-                    callback && callback();
+                    spinning = false;
+                    currentRotation = targetRotation;
+                    drawRoulette();
+                    document.getElementById('spinAgain').disabled = false;
+                    document.querySelectorAll('.bet-btn').forEach(btn => btn.disabled = false);
                 }
             }
-
-            requestAnimationFrame(animate);
         }
 
-        function startSpin() {
+        function spin(bet = null) {
             if (spinning) return;
+            
+            if (bet !== null) {
+                const currentBet = document.querySelector('.bet-btn.active');
+                if (currentBet) currentBet.classList.remove('active');
+                document.querySelector(`button[onclick="spin(${bet})"]`).classList.add('active');
+                return;
+            }
+            
             spinning = true;
-            updateButtonsState();
-
-            const {winIdx, visible, active} = getPrizeIdxAndView(currentPrizes);
-            renderRoulette(-1, visible);
-
+            document.getElementById('spinAgain').disabled = true;
+            document.querySelectorAll('.bet-btn').forEach(btn => btn.disabled = true);
+            
+            selectedPrize = Math.floor(Math.random() * prizes.length);
+            const baseRotations = 4;
+            const prizeWidth = 70;
+            const targetPrizePosition = selectedPrize * prizeWidth;
+            
+            targetRotation = (baseRotations * prizes.length * prizeWidth) + targetPrizePosition;
+            spinStartTime = performance.now();
+            spinDuration = 4000;
+            
+            requestAnimationFrame(animate);
+            
             setTimeout(() => {
-                animateRoulette(visible, active + Math.floor(Math.random()*2), () => {
-                    spinning = false;
-                    updateButtonsState();
-                    const winPrize = visible[Math.floor(CANVAS_CONFIG.visibleItems/2)];
-                    showPrizeInfo(winPrize);
-                    addToInventory(winPrize);
-                });
-            }, 10);
+                const prize = prizes[selectedPrize];
+                document.getElementById('prizeInfo').textContent = `Вы выиграли: ${prize}!`;
+            }, spinDuration);
+        }
+                   function showRoulette() {
+            document.querySelector('.inventory-list')?.remove();
+            document.querySelector('.profile-info')?.remove();
+            document.getElementById('main-content').style.display = 'flex';
+            document.querySelectorAll('.bottom-nav button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.bottom-nav button:first-child').classList.add('active');
         }
 
-        // Обработчики событий
-        luckButtons.forEach(btn => {
-            btn.onclick = () => {
-                if (spinning) return;
-                luckButtons.forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                currentCost = +btn.dataset.cost;
-                currentPrizes = generatePrizes(currentCost);
-                currentPrize = null;
-                lastSpinDone = false;
-                prizeInfo.textContent = "";
-                updateButtonsState();
-                const {visible} = getPrizeIdxAndView(currentPrizes);
-                renderRoulette(Math.floor(CANVAS_CONFIG.visibleItems/2), visible);
-            };
-        });
-
-        spinBtn.onclick = () => {
-            if (spinning || !currentCost) return;
-            if (balance < currentCost) {
-                alert("Недостаточно баланса для ставки!");
-                return;
-            }
-            balance -= currentCost;
-            updateBalance();
-            startSpin();
-            lastSpinDone = true;
-            updateButtonsState();
-        };
-
-        spinAgainBtn.onclick = () => {
-            if (spinning || !currentCost || balance < currentCost) return;
-            prizeInfo.textContent = "";
-            balance -= currentCost;
-            updateBalance();
-            startSpin();
-            lastSpinDone = true;
-            updateButtonsState();
-        };
-
-        sellAllBtn.onclick = () => {
-            if (inventory.length === 0) return;
-            let sum = 0;
-            inventory.forEach(item => { sum += item.price; });
-            balance += sum;
-            updateBalance();
-            inventory = [];
-            updateInventory();
-            updateInventoryCount();
-        };
-
-        // Вспомогательные функции
-        function updateBalance() {
-            balanceElem.textContent = balance;
-            document.getElementById("balanceValueProfile").textContent = balance;
-        }
-
-        function updateButtonsState() {
-            if (spinning) {
-                spinBtn.style.display = "none";
-                spinAgainBtn.style.display = "none";
-                luckButtons.forEach(btn => btn.disabled = true);
-                return;
-            }
+        function showInventory() {
+            document.querySelector('.inventory-list')?.remove();
+            document.querySelector('.profile-info')?.remove();
+            document.getElementById('main-content').style.display = 'none';
             
-            spinBtn.style.display = lastSpinDone ? "none" : "";
-            spinAgainBtn.style.display = lastSpinDone ? "" : "none";
+            const inventoryList = document.createElement('div');
+            inventoryList.className = 'inventory-list';
             
-            const canSpin = currentCost && balance >= currentCost;
-            spinBtn.disabled = !canSpin;
-            spinAgainBtn.disabled = !canSpin;
-            luckButtons.forEach(btn => btn.disabled = false);
-        }
-
-        function showPrizeInfo(prize) {
-            if (!prize || !prize.label) {
-                prizeInfo.innerHTML = "Увы, пусто.";
-                return;
-            }
-            prizeInfo.innerHTML = `
-                Ваш приз: <span style="font-size:1.28em">${prize.emoji} ${prize.label}</span><br>
-                Цена: <b>${prize.price}⭐</b>
-            `;
-        }
-
-        function addToInventory(prize) {
-            const invId = Math.random().toString(36).slice(2) + Date.now();
-            inventory.push({ ...prize, invId });
-            updateInventory();
-            updateInventoryCount();
-        }
-
-        function updateInventory() {
-            const invList = document.getElementById('inventoryList');
-            invList.innerHTML = "";
-            if (inventory.length === 0) {
-                invList.innerHTML = `<div style="color:#888;">Инвентарь пуст.</div>`;
-                document.getElementById('sellAllBtn').disabled = true;
-                return;
-            }
-            document.getElementById('sellAllBtn').disabled = false;
-            inventory.forEach(item => {
-                let div = document.createElement("div");
-                div.className = "inventory-item";
-                div.innerHTML = `
-                    <span>${item.emoji} ${item.label} <span style="color:#aaa;">(${item.price} ⭐)</span></span>
-                `;
-                invList.appendChild(div);
+            const sellAllBtn = document.createElement('button');
+            sellAllBtn.className = 'sell-all-btn';
+            sellAllBtn.textContent = 'Продать всё';
+            inventoryList.appendChild(sellAllBtn);
+            
+            const items = [
+                'VIP статус (14 дней)',
+                'Промокод на 500 ⭐',
+                'VIP статус (7 дней)',
+                'Промокод на 250 ⭐'
+            ];
+            
+            items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'inventory-item';
+                itemDiv.textContent = item;
+                inventoryList.appendChild(itemDiv);
             });
-        }
-
-        function updateInventoryCount() {
-            document.getElementById('inventoryCount').textContent =
-                `🎁 Предметов в инвентаре: ${inventory.length}`;
-        }
-
-        function updateProfile() {
-            let user = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user);
-            if (user) {
-                tgUser = user;
-                tgUserId = user.id;
-            } else {
-                tgUser = {first_name: "Гость", username: "", id: 0};
-                tgUserId = 0;
-            }
             
-            document.getElementById("username").textContent = tgUser.first_name;
-            document.getElementById("usernick").textContent = tgUser.username || "";
-            document.getElementById("userid").textContent = tgUser.id;
-            
-            let avatar = document.getElementById("tg-avatar");
-            if (tgUser.photo_url) {
-                avatar.src = tgUser.photo_url;
-                avatar.style.display = "";
-            } else {
-                avatar.style.display = "none";
-            }
+            document.body.appendChild(inventoryList);
+            document.querySelectorAll('.bottom-nav button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.bottom-nav button:nth-child(2)').classList.add('active');
         }
 
-        // Навигация
-        const navBtns = {
-            profile: document.getElementById("navProfile"),
-            roulette: document.getElementById("navRoulette"),
-            inventory: document.getElementById("navInventory")
-        };
-
-        const screens = {
-            profile: document.getElementById("profile"),
-            roulette: document.getElementById("roulette"),
-            inventory: document.getElementById("inventory")
-        };
-
-        function showScreen(screen) {
-            Object.keys(screens).forEach(k => {
-                screens[k].style.display = (k === screen) ? "" : "none";
-                navBtns[k].classList.toggle("active", k === screen);
-            });
-            if (screen === "profile") updateProfile();
-            if (screen === "inventory") {
-                updateInventory();
-                updateInventoryCount();
-            }
+        function showProfile() {
+            document.querySelector('.inventory-list')?.remove();
+            document.querySelector('.profile-info')?.remove();
+            document.getElementById('main-content').style.display = 'none';
+            
+            const profileInfo = document.createElement('div');
+            profileInfo.className = 'profile-info';
+            
+            const avatar = document.createElement('img');
+            avatar.id = 'tg-avatar';
+            avatar.src = tg.initDataUnsafe?.user?.photo_url || '';
+            if(avatar.src) avatar.style.display = 'block';
+            profileInfo.appendChild(avatar);
+            
+            const name = document.createElement('div');
+            name.style.marginBottom = '10px';
+            name.textContent = `${tg.initDataUnsafe?.user?.first_name || 'Пользователь'} ${tg.initDataUnsafe?.user?.last_name || ''}`;
+            profileInfo.appendChild(name);
+            
+            const stats = document.createElement('div');
+            stats.style.fontSize = '0.9em';
+            stats.style.color = '#aaa';
+            stats.innerHTML = 'Выиграно: 12 раз<br>Потрачено: 2450 ⭐<br>Выиграно: 4800 ⭐';
+            profileInfo.appendChild(stats);
+            
+            document.body.appendChild(profileInfo);
+            document.querySelectorAll('.bottom-nav button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.bottom-nav button:nth-child(3)').classList.add('active');
         }
 
-        navBtns.profile.onclick = () => showScreen("profile");
-        navBtns.roulette.onclick = () => showScreen("roulette");
-        navBtns.inventory.onclick = () => showScreen("inventory");
-
-        // Инициализация
-        window.onload = () => {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-            }
-            
-            updateBalance();
-            updateButtonsState();
-            if (luckButtons.length > 0) {
-                luckButtons[0].click();
-            }
-        };
+        drawRoulette();
     </script>
 </body>
 </html>
